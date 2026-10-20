@@ -1,0 +1,39 @@
+{
+  "execution_id": 35,
+  "execution_status": "error",
+  "query": {},
+  "llm": {
+    "provider": null,
+    "model": null
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": null,
+  "item_url": null,
+  "category": null,
+  "image": null,
+  "post": null,
+  "chars_before_link": null,
+  "guardrail_history": [],
+  "result": null,
+  "failure": {
+    "code": "SOURCE_DOWN",
+    "message": "connect ECONNREFUSED 127.0.0.1:9",
+    "hint": "placidway.com is unreachable or erroring. Retries were exhausted; tomorrow's run will try again."
+  },
+  "approval_links": null
+}

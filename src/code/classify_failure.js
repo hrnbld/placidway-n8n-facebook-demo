@@ -52,5 +52,5 @@ const row = {
 };
 const text = `:rotating_light: *PlacidWay -> Facebook run ${status.toUpperCase()}* - ${code}\nRun: ${run.id} (${run.trigger}, ${run.mode})\nItem: ${row.item_url || 'n/a'}\nWhat happened: ${msg.slice(0, 700)}\nWhat to do: ${hint}`;
 const fmt = $env.WEBHOOK_FORMAT || 'slack';
-const alert = { url: $env.ALERT_WEBHOOK_URL || '', payload: fmt === 'slack' ? { text } : { event: 'run_failed', code, status, run_id: run.id, item_url: row.item_url, message: msg, hint } };
+const alert = { configured: !!$env.ALERT_WEBHOOK_URL, payload: fmt === 'slack' ? { text } : { event: 'run_failed', code, status, run_id: run.id, item_url: row.item_url, message: msg, hint } };
 return [{ json: { row, alert, code, hint, message: msg, failedNodeHint: publishNode || failedNode } }];

@@ -10,6 +10,6 @@ const text = `:rotating_light: *${e.workflow?.name || 'workflow'} crashed* (unha
 const fmt = $env.WEBHOOK_FORMAT || 'slack';
 return [{ json: {
   skip: already || !$env.ALERT_WEBHOOK_URL,
-  alert: { url: $env.ALERT_WEBHOOK_URL || '', payload: fmt === 'slack' ? { text } : { event: 'workflow_crashed', execution_id: e.execution?.id, last_node: e.execution?.lastNodeExecuted, message: msg } },
+  alert: { configured: !!$env.ALERT_WEBHOOK_URL, payload: fmt === 'slack' ? { text } : { event: 'workflow_crashed', execution_id: e.execution?.id, last_node: e.execution?.lastNodeExecuted, message: msg } },
   row: { run_id: String(e.execution?.id || ''), finished_at: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC', status: 'failed', error: ('UNHANDLED: ' + msg).slice(0, 1500) },
 } }];

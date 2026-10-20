@@ -62,8 +62,10 @@ const cfg = {
     scheduleDelayMinutes: webhookOverrides.schedule !== undefined ? +webhookOverrides.schedule || 0 : num('FB_SCHEDULE_DELAY_MINUTES', 0),
     hasToken: !!env('FB_PAGE_TOKEN', ''),
   },
-  review: { webhookUrl: env('REVIEW_WEBHOOK_URL', env('ALERT_WEBHOOK_URL', '')), format: env('WEBHOOK_FORMAT', 'slack') },
-  alert: { webhookUrl: env('ALERT_WEBHOOK_URL', ''), format: env('WEBHOOK_FORMAT', 'slack') },
+  // Webhook URLs are secrets (anyone holding one can post to the channel): only flags travel with the item;
+  // the HTTP nodes read the URL from $env at call time, so it never lands in execution data.
+  review: { configured: !!env('REVIEW_WEBHOOK_URL', env('ALERT_WEBHOOK_URL', '')), format: env('WEBHOOK_FORMAT', 'slack') },
+  alert: { configured: !!env('ALERT_WEBHOOK_URL', ''), format: env('WEBHOOK_FORMAT', 'slack') },
 };
 if (cfg.llm.apiKey) cfg.llm.apiKeySet = true;
 
