@@ -1,0 +1,11 @@
+# secrets / local runtime
+.env
+*.env.local
+n8n.log
+output/n8n.log
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+# local backups of the workflow taken before re-imports
+workflows/backup/

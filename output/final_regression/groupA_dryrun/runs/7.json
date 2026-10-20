@@ -1,0 +1,45 @@
+{
+  "execution_id": 7,
+  "execution_status": "error",
+  "query": {
+    "type": "article"
+  },
+  "llm": {
+    "provider": null,
+    "model": null
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": null,
+  "item_url": null,
+  "category": null,
+  "image": null,
+  "post": null,
+  "chars_before_link": null,
+  "guardrail_history": [],
+  "result": null,
+  "failure": {
+    "code": "NO_NEW_CONTENT",
+    "message": "NO_NEW_CONTENT: all 2 'article' sitemap items are already posted or disallowed [line 49]",
+    "hint": "Every recent item of today's content type was already posted. Consider widening CANDIDATE_WINDOW."
+  },
+  "approval_links": null
+}

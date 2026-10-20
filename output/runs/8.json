@@ -1,0 +1,72 @@
+{
+  "execution_id": 8,
+  "execution_status": "success",
+  "query": {},
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Reuse Saved Draft #5?",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/7063/Thorough-Dental-check-up-Package",
+  "category": "dental",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1750652232Thorough-Dental-Check-up-Package-in-Seoul.png",
+  "post": "Considering a dental check-up while traveling abroad?\n\nSeoul Today Dental Clinic in Goyang offers a comprehensive exam, digital X‑rays and a 3D CT scan.\nAn English‑speaking coordinator assists international patients throughout the visit.\nThe clinic is conveniently located near Samsong Station (Subway Line 3) and Starfield Goyang.\n\nRead the full guide for more details.\nhttps://www.placidway.com/package/7063/Thorough-Dental-check-up-Package\n\n#DentalCheckUp #MedicalTourism #SouthKorea #GoyangDentistry #EnglishSupport",
+  "chars_before_link": 370,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_8_1792478623485",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/package/1750652232Thorough-Dental-Check-up-Package-in-Seoul.png",
+        "caption": "Considering a dental check-up while traveling abroad?\n\nSeoul Today Dental Clinic in Goyang offers a comprehensive exam, digital X‑rays and a 3D CT scan.\nAn English‑speaking coordinator assists international patients throughout the visit.\nThe clinic is conveniently located near Samsong Station (Subway Line 3) and Starfield Goyang.\n\nRead the full guide for more details.\nhttps://www.placidway.com/package/7063/Thorough-Dental-check-up-Package\n\n#DentalCheckUp #MedicalTourism #SouthKorea #GoyangDentistry #EnglishSupport",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

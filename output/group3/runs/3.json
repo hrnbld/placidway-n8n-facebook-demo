@@ -1,0 +1,60 @@
+{
+  "execution_id": 3,
+  "execution_status": "success",
+  "query": {
+    "type": "answer",
+    "schedule": "60"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Has Image?",
+    "Facebook: Publish Photo",
+    "Publish Result",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "answer",
+  "item_url": "https://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better",
+  "category": "stem-cell",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1791935878_Comparing-PRP-versus-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better.jpg",
+  "post": "Planning care abroad? Comparing PRP vs. Stem Cell Knee Treatments in Japan: Which Works Better?\n\nJapan has quietly become a global powerhouse for regenerative medicine.\nIf you are struggling with knee pain, you might be wondering if you should fly to Tokyo or Osaka for treatment.\nThe choice isn't just about price; it's about the severity of your condition and what you hope to achieve.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\n\n#MedicalTourism #PatientQuestions #HealthcareTravel",
+  "chars_before_link": 424,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "scheduled",
+    "fbPostId": "957899504078846_2457763810",
+    "scheduledFor": "2026-10-20 01:56:03 UTC"
+  },
+  "failure": null,
+  "approval_links": null
+}

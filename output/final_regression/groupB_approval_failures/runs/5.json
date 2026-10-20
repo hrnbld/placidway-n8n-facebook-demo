@@ -1,0 +1,44 @@
+{
+  "execution_id": 5,
+  "execution_status": "error",
+  "query": {
+    "type": "article"
+  },
+  "llm": {
+    "provider": null,
+    "model": null
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": null,
+  "item_url": null,
+  "category": null,
+  "image": null,
+  "post": null,
+  "chars_before_link": null,
+  "guardrail_history": [],
+  "result": null,
+  "failure": {
+    "code": "SOURCE_BLOCKED",
+    "message": "SOURCE_BLOCKED: Cloudflare \"Just a moment\" challenge (HTTP 403). 403 - \" Just a moment... challenge-platform \"",
+    "hint": "placidway.com refused the request (bot wall). Nothing was posted. Retry later or from another network."
+  },
+  "approval_links": null
+}

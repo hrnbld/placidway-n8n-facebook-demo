@@ -1,0 +1,203 @@
+{
+  "id": "PwFbErrorHandl01",
+  "name": "PlacidWay -> Facebook: Error Handler",
+  "active": false,
+  "nodes": [
+    {
+      "id": "f4f51ea2-0508-5163-bd6c-7c8f309df566",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "b73b87cb-ee49-5665-9a82-9260a0a40fb5",
+      "name": "Format Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Error Handler workflow: safety net for anything the main workflow did not catch itself.\n// Errors already alerted in-flow are prefixed \"ALERTED\" and skipped to avoid double alerts.\nconst e = $input.first().json;\nconst msg = String(e.execution?.error?.message || e.trigger?.error?.message || 'Unknown error');\n// n8n may rewrite a node's error message (e.g. ECONNREFUSED -> \"The service refused the connection\"),\n// so look for the ALERTED marker in every message variant it keeps.\nconst variants = [msg, ...(e.execution?.error?.messages || []), String(e.execution?.error?.description || '')];\nconst already = variants.some((m) => /^ALERTED\\b/.test(String(m)));\nconst text = `:rotating_light: *${e.workflow?.name || 'workflow'} crashed* (unhandled)\\nExecution: ${e.execution?.id || 'n/a'} ${e.execution?.url || ''}\\nLast node: ${e.execution?.lastNodeExecuted || 'n/a'}\\nError: ${msg.slice(0, 800)}`;\nconst fmt = $env.WEBHOOK_FORMAT || 'slack';\nreturn [{ json: {\n  skip: already || !$env.ALERT_WEBHOOK_URL,\n  alert: { url: $env.ALERT_WEBHOOK_URL || '', payload: fmt === 'slack' ? { text } : { event: 'workflow_crashed', execution_id: e.execution?.id, last_node: e.execution?.lastNodeExecuted, message: msg } },\n  row: { run_id: String(e.execution?.id || ''), finished_at: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC', status: 'failed', error: ('UNHANDLED: ' + msg).slice(0, 1500) },\n} }];\n"
+      }
+    },
+    {
+      "id": "e17517ef-88f7-52ca-8a80-6d57b6380ae4",
+      "name": "Not Alerted Yet?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b86485f3-4617-5fab-9eff-5b50845fdbef",
+              "leftValue": "={{ !$json.skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "c0f9d332-aa02-51f6-81de-1e4a562b84be",
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.alert.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.alert.payload) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "1b189d11-3dff-5c6b-a25f-a81755025623",
+      "name": "Row: Crash",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: $('Format Alert').first().json.row }];"
+      }
+    },
+    {
+      "id": "8adc3003-4e66-504c-a011-afa937e4893d",
+      "name": "Log Crash",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_runs"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Alert": {
+      "main": [
+        [
+          {
+            "node": "Not Alerted Yet?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Alerted Yet?": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert": {
+      "main": [
+        [
+          {
+            "node": "Row: Crash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Crash": {
+      "main": [
+        [
+          {
+            "node": "Log Crash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": []
+}

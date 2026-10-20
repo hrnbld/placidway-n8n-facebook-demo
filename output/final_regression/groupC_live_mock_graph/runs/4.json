@@ -1,0 +1,65 @@
+{
+  "execution_id": 4,
+  "execution_status": "error",
+  "query": {
+    "type": "article"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "mock-extractive"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Photo Post?",
+    "Facebook: Publish Photo",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": "article",
+  "item_url": "https://www.placidway.com/article/7649/Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka",
+  "category": "neuro",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792390232Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka-Thumbnail.jpg",
+  "post": "Planning care abroad? Stem Cell Therapy for Huntington's Disease: How Malaysians Are Exploring Treatment Optio\n\nOsaka, Japan, has established itself as a leading international hub for medical research and biotechnology.\nExplore specialized neurological care and genetic counseling options.\nResearch clinical trials and emerging approaches for Huntington's disease.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/article/7649/Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka\n\n#MedicalTourism #HealthcareTravel #PatientGuide",
+  "chars_before_link": 401,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": null,
+  "failure": {
+    "code": "FB_TOKEN_EXPIRED",
+    "message": "400 - \"{\"error\": {\"message\": \"Error validating access token: Session has expired.\", \"type\": \"OAuthException\", \"code\": 190, \"error_subcode\": 463, \"fbtrace_id\": \"mock\"}}\"",
+    "hint": "Facebook page token is invalid or expired. Generate a new long-lived Page token (README section 5) and update FB_PAGE_TOKEN."
+  },
+  "approval_links": null
+}

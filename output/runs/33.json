@@ -1,0 +1,66 @@
+{
+  "execution_id": 33,
+  "execution_status": "waiting",
+  "query": {
+    "approval": "true"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Build Review Request",
+    "Reviewer Webhook Set?",
+    "Notify Reviewer",
+    "Set Pending",
+    "Row: Pending",
+    "Log: Pending Approval",
+    "Wait for Approval"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC",
+  "category": "cardiac",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1792482299Cardiac-Risk-Assessment-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+  "post": "Curious about a thorough heart health check in Saudi Arabia?\n\nThe Cardiac Risk Assessment is offered at King Faisal Specialist Hospital & Research Centre in Riyadh.\nIt provides a one‑day outpatient evaluation with cardiology consultation, ECG, and core bloodwork.\nA post‑results consultation and personalized preventive plan are included to guide lifestyle adjustments.\n\nRead the full guide:\nhttps://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#CardiacScreening #PreventiveCare #SaudiHealth",
+  "chars_before_link": 391,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": null,
+  "failure": null,
+  "approval_links": {
+    "approveUrl": "http://localhost:5678/webhook-waiting/33?signature=8c1d93fbd91729dff328459ea97e6ebccf1284e81464bae46e0ea059746ae245&decision=approve",
+    "rejectUrl": "http://localhost:5678/webhook-waiting/33?signature=8c1d93fbd91729dff328459ea97e6ebccf1284e81464bae46e0ea059746ae245&decision=reject",
+    "resumeUrl": "http://localhost:5678/webhook-waiting/33?signature=8c1d93fbd91729dff328459ea97e6ebccf1284e81464bae46e0ea059746ae245",
+    "payload": {
+      "text": "*PlacidWay -> Facebook: draft needs approval* (run 33, DRY RUN)\nSource (package, cardiac): https://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\nImage: https://placidwaycdn.s3.amazonaws.com/images/package/1792482299Cardiac-Risk-Assessment-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg\n\n```\nCurious about a thorough heart health check in Saudi Arabia?\n\nThe Cardiac Risk Assessment is offered at King Faisal Specialist Hospital & Research Centre in Riyadh.\nIt provides a one‑day outpatient evaluation with cardiology consultation, ECG, and core bloodwork.\nA post‑results consultation and personalized preventive plan are included to guide lifestyle adjustments.\n\nRead the full guide:\nhttps://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#CardiacScreening #PreventiveCare #SaudiHealth\n```\n\nGuardrails: passed on attempt 1 (rules + LLM review)\nApprove: http://localhost:5678/webhook-waiting/33?signature=8c1d93fbd91729dff328459ea97e6ebccf1284e81464bae46e0ea059746ae245&decision=approve\nReject: http://localhost:5678/webhook-waiting/33?signature=8c1d93fbd91729dff328459ea97e6ebccf1284e81464bae46e0ea059746ae245&decision=reject\nExpires in 24h."
+    }
+  }
+}

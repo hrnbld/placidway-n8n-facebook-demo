@@ -1,0 +1,68 @@
+{
+  "execution_id": 4,
+  "execution_status": "success",
+  "query": {
+    "type": "package"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/7041/Liposuction-Package-in-Cancun-Mexico-by-Dr-Arturo-Valdez",
+  "category": "cosmetic",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1731659349Liposuction-Package-in-Cancun,-Mexico-by-Dr.-Arturo-Valdez-Thumbnail.png",
+  "post": "Planning care abroad? Liposuction Package in Cancun, Mexico by Dr. Arturo Valdez\n\nArturo Valdez offers a comprehensive package that could give you the body contouring results you've always desired.\nRead on to learn more about the benefits, costs, and details of this transformative procedure.\nMany patients, however, worry about the cost and the quality of care.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/package/7041/Liposuction-Package-in-Cancun-Mexico-by-Dr-Arturo-Valdez\n\n#MedicalTourism #TreatmentAbroad #HealthcareTravel",
+  "chars_before_link": 399,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_4_1792457426403",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "http://127.0.0.1:8790/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/package/1731659349Liposuction-Package-in-Cancun,-Mexico-by-Dr.-Arturo-Valdez-Thumbnail.png",
+        "caption": "Planning care abroad? Liposuction Package in Cancun, Mexico by Dr. Arturo Valdez\n\nArturo Valdez offers a comprehensive package that could give you the body contouring results you've always desired.\nRead on to learn more about the benefits, costs, and details of this transformative procedure.\nMany patients, however, worry about the cost and the quality of care.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/package/7041/Liposuction-Package-in-Cancun-Mexico-by-Dr-Arturo-Valdez\n\n#MedicalTourism #TreatmentAbroad #HealthcareTravel",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

@@ -1,0 +1,39 @@
+{
+  "execution_id": 1,
+  "execution_status": "error",
+  "query": {
+    "type": "article"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": null,
+  "item_url": null,
+  "category": null,
+  "image": null,
+  "post": null,
+  "chars_before_link": null,
+  "guardrail_history": [],
+  "result": null,
+  "failure": {
+    "code": "SOURCE_BLOCKED",
+    "message": "403 - \"<!DOCTYPE html><html lang=\\\"en-US\\\"><head><title>Just a moment...</title><meta http-equiv=\\\"Content-Type\\\" content=\\\"text/html; charset=UTF-8\\\"><meta http-equiv=\\\"X-UA-Compatible\\\" content=\\\"IE=Edge\\\"><meta name=\\\"robots\\\" content=\\\"noindex,nofollow\\\"><meta name=\\\"viewport\\\" content=\\\"width=device-width,initial-scale=1\\\"><meta http-equiv=\\\"content-security-policy\\\" content=\\\"default-src &#39;none&#39;; script-src &#39;nonce-IW1RcMo55edR6mvBSKZwcy&#39; &#39;unsafe-eval&#39; https://challenges.cloudflare.com; script-src-attr &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;self&#39; https://challenges.cloudflare.com; connect-src &#39;self&#39; https://challenges.cloudflare.com; frame-src &#39;self&#39; https://challenges.cloudflare.com blob:; child-src &#39;self&#39; https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri &#39;self&#39;\\\"><style>*{box-sizing:border-box;margin:0;padding:0}html{line-height:1.15;-webkit-text-size-adjust:100%;color:#313131;font-family:system-ui,-apple-system,BlinkMacSystemFont,\\\"Segoe UI\\\",Roboto,\\\"Helvetica Neue\\\",Arial,\\\"Noto Sans\\\",sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\",\\\"Segoe UI Symbol\\\",\\\"Noto Color Emoji\\\"}body{display:flex;flex-direction:column;height:100vh;min-height:100vh}.main-content{margin:8rem auto;padding-left:1.5rem;max-width:60rem}@media (width <= 720px){.main-content{margin-top:4rem}}#challenge-error-text{background-image:url(\\\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0ibm9uZSI+PHBhdGggZmlsbD0iI0IyMEYwMyIgZD0iTTE2IDNhMTMgMTMgMCAxIDAgMTMgMTNBMTMuMDE1IDEzLjAxNSAwIDAgMCAxNiAzbTAgMjRhMTEgMTEgMCAxIDEgMTEtMTEgMTEuMDEgMTEuMDEgMCAwIDEtMTEgMTEiLz48cGF0aCBmaWxsPSIjQjIwRjAzIiBkPSJNMTcuMDM4IDE4LjYxNUgxNC44N0wxNC41NjMgOS41aDIuNzgzem0tMS4wODQgMS40MjdxLjY2IDAgMS4wNTcuMzg4LjQwNy4zODkuNDA3Ljk5NCAwIC41OTYtLjQwNy45ODQtLjM5Ny4zOS0xLjA1Ny4zODktLjY1IDAtMS4wNTYtLjM4OS0uMzk4LS4zODktLjM5OC0uOTg0IDAtLjU5Ny4zOTgtLjk4NS40MDYtLjM5NyAxLjA1Ni0uMzk3Ii8+PC9zdmc+\\\");background-repeat:no-repeat;background-size:contain;padding-left:34px}</style><meta http-equiv=\\\"refresh\\\" content=\\\"360\\\"></head><body><div class=\\\"main-wrapper\\\" role=\\\"main\\\"><div class=\\\"main-content\\\"><noscript><div class=\\\"h2\\\"><span id=\\\"challenge-error-text\\\">Enable JavaScript and cookies to continue</span></div></noscript></div></div><script nonce=\\\"IW1RcMo55edR6mvBSKZwcy\\\">(function(){window._cf_chl_opt = {cFPWv: 'b',cH: 'Jiy9RcbTCJG6L.aiPr1mwiAfrGCcVIT9WOuM6HrNjaY-1792457946-1.2.1.1-qLl7OEjMJd4_ZGomjXc.q3Ty.BSE7Gfq2jkcgvwNSy7LTRaPbCFK4mBD.KBBKIZ9',cITimeS: '1792457946',cN: 'IW1RcMo55edR6mvBSKZwcy',cRay: 'a4d413f5c8b1147f',cTplC:0,cTplO:0,cTplV:5,cType: 'interactive',cUPMDTk:\\\"/1/sitemap_articles.xml?__cf_chl_tk=eaBOX0hW9B2ioGRPz4JPAhYqzajjHmGDvxXma7uX7GM-1792457946-1.0.1.1-KJTuxrH9K2y8rZ4DOf2kA99gREHZg1da47MHcuZAlVk\\\",cvId: '3',cZone: 'www.placidway.com',fa:\\\"/1/sitemap_articles.xml?__cf_chl_f_tk=eaBOX0hW9B2ioGRPz4JPAhYqzajjHmGDvxXma7uX7GM-1792457946-1.0.1.1-KJTuxrH9K2y8rZ4DOf2kA99gREHZg1da47MHcuZAlVk\\\",md: '_f7RY_P3hdNs0vNIUeAiZ6jEbeCpTQRR8WMfAnImKbE-1792457946-1.2.1.1-8sl6X17qw55kuflr3ajzHgA17zuAtMlNGkZbRZ2GBlGYFhZoFK_BUXRo6ZtbSTulKTdnX3ooGmNyToh3nJgSu.yN9wnzTchb1nLtYlvgKrI2ZBzPwShfN6p87NQy9eptlZXSTGb7AG1GfydVWUcnl3Uig6VfAenEvMI9Pr4WItbjCDHvH9Zz0wIBksLLNkeCVYkKTad59iumX0qnvMxZAzYx6x49FBL8oFNEydEProDIJ79UGBXLTpx.WNRT9Mi50mLdr7CCQK.a6W0sC1_FUTSoejh91.dq9.Z_iXs7fjiarUhCzaMTT2LTzpYj.UsLg6J2CHWZZRFU5kDhb_hF3IoQvQlS2mGaZ.OXGYLi3mRjAPVl241coWbsky5pipKLrN1BmSuwdTm39XJUB9aUnAjQyKDWfkawbwT8dMKvICaelcOcxKZFOOyualma4MVIh.t4I9.IpcN3m4GOMq2dd_PZ94ooDI8VvPSnSP7itCqsaUiQMz4Mq9y.x.8eJ5uSAhdTI8Gcc2AJ2.N9XNZMAL6WwDYx.uJyVqztNqIU0UfprbwsInKIptPDAYJUPLWA7v.NWaLtkZ8IAfytG0KdOlYs_PjBwg20HEE_qKKzSqjeZhTUIo14DPSxBLO4URyNmZi8cvGboqoi6Womnm9nO4A4hK5VrTcmaZooIYME8E624BUCqyCUR9NW6gR96l3yAofSj2C4DrNsPWdMNUa2SPmQDr5HQpZOIfM9564be72tXymvh86Q02t5Va3R_p4l7sycAR3TbRKgL0.z0c1USoPx6kd84LbTzq.fcFYegbsEI3JFYEEEMCboC2AHCAVoAgWF_1lqc1d7XmcRlUXOxhGQY8Qp.v.Z5w77eoILRPc30u0rAsaRIpIOtcofBavNhV6ytYB8FWqTpaZMTAZA25gy2dzU6zCh5js.POuU76T2jCciL05pUe7R9qidD5fHAv7VA8V4g6IvpKQpanoPeXKu3Lb19WVPBuFEXnpXWREQ0BABd2ClhObM9avLMrkaXytTr9IwIjdRv2uqGjGLiw00K1cTMAmnXWUHaptKhWUT2TRQbpxOWFpDxu79wbfllfqY.w532kSl90Aog3wAmLJZ6DS.63mFWuc00cAbPHo',mdrd: 'NTjh1PpEBXpAUwxeSrXm9X6DZq2sXUG53uVgLM7sjrc-1792457946-1.2.1.1-.mnbAU3X8qjiyyijtg4WHoK.Xs1R2TrtJPTl1R43LFT4SZo1u8VzTYLk_d5PwNvD9_E5BaQBZnY6YnQNKXeJK8uUTpqU.1JuX8akt1lYMJOXoC8HcuemTDkn9UhJ6FAWkj_2peJq2dSXStZNgM8_n2HELJMAhE1Wk6ON7fX7vbrFxx.wdgIFJirU7ddQFItnZqwMgqD5PP8FhLC6bY4.E4uf1ccem8AcJO0nljBIqFmHztLfl3FX94NqRYITBn1tIRZ73YCKSwlMXQgz62oJXAse1QIWb0Topju8xP2dYA3.9R5OgzI8gwQjFkjjp0LEMZuuADYPIFia8gh5IIcf.w',};var a = document.createElement('script');a.nonce = 'IW1RcMo55edR6mvBSKZwcy';a.src = '/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=a4d413f5c8b1147f';window._cf_chl_opt.cOgUHash = location.hash === '' && location.href.indexOf('#') !== -1 ? '#' : location.hash;window._cf_chl_opt.cOgUQuery = location.search === '' && location.href.slice(0, location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf('?') !== -1 ? '?' : location.search;if (window.history && window.history.replaceState) {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null, null,\\\"/1/sitemap_articles.xml?__cf_chl_rt_tk=eaBOX0hW9B2ioGRPz4JPAhYqzajjHmGDvxXma7uX7GM-1792457946-1.0.1.1-KJTuxrH9K2y8rZ4DOf2kA99gREHZg1da47MHcuZAlVk\\\"+ window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null, null, ogU);}}document.getElementsByTagName('head')[0].appendChild(a);}());</script></body></html>\"",
+    "hint": "placidway.com refused the request (bot wall). Nothing was posted. Retry later or from another network."
+  },
+  "approval_links": null
+}

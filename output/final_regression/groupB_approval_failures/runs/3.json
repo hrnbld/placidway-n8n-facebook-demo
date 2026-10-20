@@ -1,0 +1,67 @@
+{
+  "execution_id": 3,
+  "execution_status": "waiting",
+  "query": {
+    "type": "answer",
+    "approval": "true"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "mock-extractive"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Build Review Request",
+    "Reviewer Webhook Set?",
+    "Notify Reviewer",
+    "Set Pending",
+    "Row: Pending",
+    "Log: Pending Approval",
+    "Wait for Approval"
+  ],
+  "content_type": "answer",
+  "item_url": "https://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better",
+  "category": "stem-cell",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1791935878_Comparing-PRP-versus-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better.jpg",
+  "post": "Planning care abroad? Comparing PRP vs. Stem Cell Knee Treatments in Japan: Which Works Better?\n\nJapan has quietly become a global powerhouse for regenerative medicine.\nIf you are struggling with knee pain, you might be wondering if you should fly to Tokyo or Osaka for treatment.\nThe choice isn't just about price; it's about the severity of your condition and what you hope to achieve.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\n\n#MedicalTourism #PatientQuestions #HealthcareTravel",
+  "chars_before_link": 424,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": null,
+  "failure": null,
+  "approval_links": {
+    "approveUrl": "http://127.0.0.1:5678/webhook-waiting/3?signature=37f36aec76fc10c13c7cd660b2ef335f1283a2762523bc7c2fed73b149bc4735&decision=approve",
+    "rejectUrl": "http://127.0.0.1:5678/webhook-waiting/3?signature=37f36aec76fc10c13c7cd660b2ef335f1283a2762523bc7c2fed73b149bc4735&decision=reject",
+    "resumeUrl": "http://127.0.0.1:5678/webhook-waiting/3?signature=37f36aec76fc10c13c7cd660b2ef335f1283a2762523bc7c2fed73b149bc4735",
+    "payload": {
+      "text": "*PlacidWay -> Facebook: draft needs approval* (run 3, DRY RUN)\nSource (answer, stem-cell): https://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\nImage: https://placidwaycdn.s3.amazonaws.com/editor_images/1791935878_Comparing-PRP-versus-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better.jpg\n\n```\nPlanning care abroad? Comparing PRP vs. Stem Cell Knee Treatments in Japan: Which Works Better?\n\nJapan has quietly become a global powerhouse for regenerative medicine.\nIf you are struggling with knee pain, you might be wondering if you should fly to Tokyo or Osaka for treatment.\nThe choice isn't just about price; it's about the severity of your condition and what you hope to achieve.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\n\n#MedicalTourism #PatientQuestions #HealthcareTravel\n```\n\nGuardrails: passed on attempt 1 (rules + LLM review)\nApprove: http://127.0.0.1:5678/webhook-waiting/3?signature=37f36aec76fc10c13c7cd660b2ef335f1283a2762523bc7c2fed73b149bc4735&decision=approve\nReject: http://127.0.0.1:5678/webhook-waiting/3?signature=37f36aec76fc10c13c7cd660b2ef335f1283a2762523bc7c2fed73b149bc4735&decision=reject\nExpires in 24h."
+    }
+  }
+}

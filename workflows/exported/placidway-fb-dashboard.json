@@ -1,0 +1,267 @@
+[
+  {
+    "updatedAt": "2026-10-20T09:50:45.000Z",
+    "createdAt": "2026-10-20T01:30:13.284Z",
+    "id": "PwFbDashboard001",
+    "name": "PlacidWay -> Facebook: Dashboard",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "adb95f4d-a5da-5373-9729-e143b975e519",
+        "name": "Open Dashboard (Webhook)",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "GET",
+          "path": "placidway-dashboard",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "9a2f7c4d-placidway-dashboard"
+      },
+      {
+        "id": "2c5fcc33-6c80-5e00-a61d-b40c11152ccf",
+        "name": "Ensure Table: pw_runs",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "resource": "table",
+          "operation": "create",
+          "tableName": "pw_runs",
+          "columns": {
+            "column": [
+              {
+                "name": "run_id",
+                "type": "string"
+              },
+              {
+                "name": "started_at",
+                "type": "string"
+              },
+              {
+                "name": "finished_at",
+                "type": "string"
+              },
+              {
+                "name": "trigger",
+                "type": "string"
+              },
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "content_type",
+                "type": "string"
+              },
+              {
+                "name": "category",
+                "type": "string"
+              },
+              {
+                "name": "item_url",
+                "type": "string"
+              },
+              {
+                "name": "item_title",
+                "type": "string"
+              },
+              {
+                "name": "image_url",
+                "type": "string"
+              },
+              {
+                "name": "post_text",
+                "type": "string"
+              },
+              {
+                "name": "chars_before_link",
+                "type": "number"
+              },
+              {
+                "name": "attempts",
+                "type": "number"
+              },
+              {
+                "name": "guardrail",
+                "type": "string"
+              },
+              {
+                "name": "fb_post_id",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "type": "string"
+              },
+              {
+                "name": "error",
+                "type": "string"
+              },
+              {
+                "name": "review_url",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {
+            "createIfNotExists": true
+          }
+        }
+      },
+      {
+        "id": "5451d897-818f-57f0-8de4-55dfc38bc047",
+        "name": "Load Runs",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "pw_runs"
+          },
+          "returnAll": true
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "e64b9a22-000b-5870-a6c2-74268444cc2f",
+        "name": "Render HTML",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          0
+        ],
+        "parameters": {
+          "jsCode": "// Dashboard: render the run log as one self-contained HTML page (scheduled, pending, published, failed).\nconst rows = $input.all().map((i) => i.json).filter((r) => r.run_id);\nrows.sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)));\nconst esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst count = (st) => rows.filter((r) => r.status === st).length;\nconst colors = { published: '#1a7f37', scheduled: '#0969da', dry_run: '#6e7781', pending_approval: '#9a6700', rejected: '#cf222e', expired: '#cf222e', failed: '#cf222e', guardrail_blocked: '#bc4c00', skipped: '#6e7781' };\nconst card = (label, n) => `<div class=\"k\"><b>${n}</b><span>${label}</span></div>`;\nconst tr = rows.map((r) => `<tr>\n<td>${esc(String(r.started_at).replace('T', ' ').slice(0, 16))}<br><small>${esc(r.trigger)} · ${esc(r.mode)}</small></td>\n<td><span class=\"st\" style=\"background:${colors[r.status] || '#6e7781'}\">${esc(r.status)}</span>${r.status === 'pending_approval' && r.review_url ? `<br><a href=\"${esc(r.review_url)}${String(r.review_url).includes('?') ? '&' : '?'}decision=approve\">approve</a> · <a href=\"${esc(r.review_url)}${String(r.review_url).includes('?') ? '&' : '?'}decision=reject\">reject</a>` : ''}</td>\n<td>${esc(r.content_type)}<br><small>${esc(r.category)}</small></td>\n<td>${r.item_url ? `<a href=\"${esc(r.item_url)}\">${esc(r.item_title || r.item_url)}</a>` : ''}${r.image_url ? `<br><img src=\"${esc(r.image_url)}\" loading=\"lazy\">` : ''}</td>\n<td><pre>${esc(r.post_text)}</pre>${r.error ? `<div class=\"err\">${esc(r.error)}</div>` : ''}</td>\n<td><small>${esc(r.fb_post_id)}</small><br><small>${esc(r.guardrail)}</small><br><small>${r.chars_before_link ? esc(r.chars_before_link) + ' chars' : ''}</small></td></tr>`).join('');\nconst html = `<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>PlacidWay → Facebook · Run dashboard</title><style>\nbody{font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;color:#1f2328;background:#f6f8fa}\nh1{font-size:20px;margin:0 0 4px}.sub{color:#59636e;margin-bottom:16px}.ks{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}\n.k{background:#fff;border:1px solid #d1d9e0;border-radius:8px;padding:10px 14px;min-width:110px}.k b{display:block;font-size:22px}.k span{color:#59636e;font-size:12px}\ntable{border-collapse:collapse;width:100%;background:#fff;border:1px solid #d1d9e0}td,th{border-top:1px solid #d1d9e0;padding:8px;vertical-align:top;text-align:left}\nth{background:#f6f8fa;font-size:12px;text-transform:uppercase;color:#59636e}pre{white-space:pre-wrap;margin:0;font:13px/1.4 system-ui;max-width:460px}\nimg{max-width:160px;border-radius:6px;margin-top:6px}.st{color:#fff;border-radius:10px;padding:2px 8px;font-size:12px}.err{color:#cf222e;font-size:12px;margin-top:6px;max-width:460px}small{color:#59636e}\n</style></head><body><h1>PlacidWay → Facebook · daily post runs</h1>\n<div class=\"sub\">Test page: ${esc($env.FB_PAGE_NAME || 'NeuPix')} · ${rows.length} runs · generated ${esc(new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC'.slice(0, 16).replace('T', ' '))} UTC</div>\n<div class=\"ks\">${card('published', count('published'))}${card('scheduled', count('scheduled'))}${card('dry runs', count('dry_run'))}${card('pending approval', count('pending_approval'))}${card('blocked by guardrails', count('guardrail_blocked'))}${card('rejected / expired', count('rejected') + count('expired'))}${card('failed', count('failed'))}</div>\n<table><tr><th>Run</th><th>Status</th><th>Type</th><th>Source</th><th>Post</th><th>FB id · checks</th></tr>${tr || '<tr><td colspan=6>No runs yet.</td></tr>'}</table></body></html>`;\nreturn [{ json: { html } }];\n"
+        }
+      },
+      {
+        "id": "950a9dce-1b39-5d30-b2ad-aebeeb7bafc1",
+        "name": "Respond with Page",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          960,
+          0
+        ],
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $json.html }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Open Dashboard (Webhook)": {
+        "main": [
+          [
+            {
+              "node": "Ensure Table: pw_runs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ensure Table: pw_runs": {
+        "main": [
+          [
+            {
+              "node": "Load Runs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Load Runs": {
+        "main": [
+          [
+            {
+              "node": "Render HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render HTML": {
+        "main": [
+          [
+            {
+              "node": "Respond with Page",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "saveManualExecutions": true,
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "42a08da3-9e56-4a62-83c0-c4485f74865d",
+    "activeVersionId": "42a08da3-9e56-4a62-83c0-c4485f74865d",
+    "versionCounter": 1,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-10-20T02:08:29.306Z",
+        "createdAt": "2026-10-20T02:08:29.306Z",
+        "role": "workflow:owner",
+        "workflowId": "PwFbDashboard001",
+        "projectId": "fNF6iExtj6sFNrYq",
+        "project": {
+          "updatedAt": "2026-10-20T02:18:21.382Z",
+          "createdAt": "2026-10-20T02:08:26.324Z",
+          "id": "fNF6iExtj6sFNrYq",
+          "name": "herin surel.herin@gmail.com <surel.herin@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "1680ebd7-0af5-4370-bbaf-e8f7f7ed3d54"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

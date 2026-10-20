@@ -1,0 +1,108 @@
+{
+  "execution_id": 6,
+  "execution_status": "error",
+  "query": {
+    "type": "article"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed? x2",
+    "Prepare Rewrite",
+    "Guardrail Blocked",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": "article",
+  "item_url": "https://www.placidway.com/article/7649/Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka",
+  "category": "neuro",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792390232Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka-Thumbnail.jpg",
+  "post": "Planning care abroad? Stem Cell Therapy for Huntington's Disease: How Malaysians Are Exploring Treatment Optio\n\nOsaka, Japan, has established itself as a leading international hub for medical research and biotechnology.\nExplore specialized neurological care and genetic counseling options.\nResearch clinical trials and emerging approaches for Huntington's disease.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/article/7649/Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka\n\n#MedicalTourism #HealthcareTravel #PatientGuide",
+  "chars_before_link": 401,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": false,
+      "issues": [
+        {
+          "type": "medical_claim",
+          "excerpt": "cures",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Prices are disabled (ALLOW_PRICES=false).",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "999",
+          "reason": "Number not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed results",
+          "reason": "Promises an outcome.",
+          "by": "llm"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Price not in source.",
+          "by": "llm"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": true,
+      "llm": false,
+      "issues": [
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed results",
+          "reason": "Promises an outcome.",
+          "by": "llm"
+        }
+      ]
+    }
+  ],
+  "result": null,
+  "failure": {
+    "code": "GUARDRAIL_BLOCKED",
+    "message": "GUARDRAIL_BLOCKED: post for https://www.placidway.com/article/7649/Stem-Cells-for-Huntingtons-Disease-How-Malaysians-Are-Finding-a-Cure-in-Osaka failed checks after 2 attempt(s): [llm:outcome_promise] Guaranteed results Promises an outcome.",
+    "hint": "Draft failed the safety checks twice, so nothing was published. Review the issues below."
+  },
+  "approval_links": null
+}

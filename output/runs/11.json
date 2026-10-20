@@ -1,0 +1,90 @@
+{
+  "execution_id": 11,
+  "execution_status": "error",
+  "query": {
+    "type": "package"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Reuse Saved Draft #5?",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed? x2",
+    "Prepare Rewrite",
+    "Guardrail Blocked",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8688/Robotic-Assisted-Total-Hysterectomy-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC",
+  "category": "other",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1792478662Robotic-Assisted-Total-Hysterectomy-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+  "post": "Robotic hysterectomy in Riyadh: what’s included?\n\nKing Faisal Specialist Hospital in Riyadh offers robotic‑assisted total hysterectomy.\nPackage includes a pre‑op gynecology consultation and imaging review.\nRobotic hysterectomy is performed by specialized surgeons, followed by a 1‑2 day stay with nursing care.\nThe system provides 3D visualization and wristed tools for precise tissue handling and minimal scarring.\n\nRead the full guide:\nhttps://www.placidway.com/package/8688/Robotic-Assisted-Total-Hysterectomy-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#RoboticGynecology #MedicalTourism #SaudiArabia #KFSHRC",
+  "chars_before_link": 437,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Pre-operative gynecology consultation and standard imaging review. Routine pre-o",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "International Administrative Support: Established coordination for regional and ",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Robotic-assisted total hysterectomy procedure performed by specialized gynecolog",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    }
+  ],
+  "result": null,
+  "failure": {
+    "code": "GUARDRAIL_BLOCKED",
+    "message": "GUARDRAIL_BLOCKED: post for https://www.placidway.com/package/8688/Robotic-Assisted-Total-Hysterectomy-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC failed checks after 2 attempt(s): [rules:unsupported_fact] Robotic-assisted total hysterectomy procedure performed by specialized gynecolog Supporting quote not found in the source page.",
+    "hint": "Draft failed the safety checks twice, so nothing was published. Review the issues below."
+  },
+  "approval_links": null
+}

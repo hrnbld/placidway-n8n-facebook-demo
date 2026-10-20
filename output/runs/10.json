@@ -1,0 +1,101 @@
+{
+  "execution_id": 10,
+  "execution_status": "success",
+  "query": {
+    "type": "article"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Reuse Saved Draft #5?",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed?",
+    "Prepare Rewrite",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "article",
+  "item_url": "https://www.placidway.com/article/9796/Why-Families-Are-Researching-Stem-Cell-Therapy-for-Autism-in-Mexico-What-Evidence-Should-They-Ask-For",
+  "category": "neuro",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792412043Images-(PS)-(7).png",
+  "post": "Why are families looking at stem‑cell therapy for autism in Mexico?\n\nPlacidWay lists autism‑focused regenerative programs in Tijuana, Monterrey and Mexico City.\nStem‑cell interventions for autism are still investigational and not FDA‑approved.\nPublished reviews note the studies are small, heterogeneous and have not yet established effectiveness.\n\nRead the full guide:\nhttps://www.placidway.com/article/9796/Why-Families-Are-Researching-Stem-Cell-Therapy-for-Autism-in-Mexico-What-Evidence-Should-They-Ask-For\n\n#StemCellTherapy #AutismResearch #MedicalTourism #MexicoHealth",
+  "chars_before_link": 369,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "medical_claim",
+          "excerpt": "proven",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "the studies are generally small, heterogeneous, ... and do not yet establish ste",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Families considering treatment abroad should therefore investigate: - What exact",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_10_1792478685824",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792412043Images-(PS)-(7).png",
+        "caption": "Why are families looking at stem‑cell therapy for autism in Mexico?\n\nPlacidWay lists autism‑focused regenerative programs in Tijuana, Monterrey and Mexico City.\nStem‑cell interventions for autism are still investigational and not FDA‑approved.\nPublished reviews note the studies are small, heterogeneous and have not yet established effectiveness.\n\nRead the full guide:\nhttps://www.placidway.com/article/9796/Why-Families-Are-Researching-Stem-Cell-Therapy-for-Autism-in-Mexico-What-Evidence-Should-They-Ask-For\n\n#StemCellTherapy #AutismResearch #MedicalTourism #MexicoHealth",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

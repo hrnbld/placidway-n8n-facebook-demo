@@ -1,0 +1,88 @@
+{
+  "execution_id": 1,
+  "execution_status": "success",
+  "query": {
+    "type": "article"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed?",
+    "Prepare Rewrite",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "article",
+  "item_url": "https://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico",
+  "category": "cosmetic",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792406582Images-(PS)-(5).png",
+  "post": "Considering body‑contouring after GLP‑1 weight loss?\n\nSignificant weight loss with GLP‑1 meds may reveal loose skin on abdomen, arms, thighs, and breasts.\nIn 2025, 82% of ASPS surgeons reported GLP‑1‑related consultation requests, many about tummy tucks and lifts.\nMexico can reduce travel distance compared with Europe or Asia, making follow‑up easier for US and Canadian patients.\n\nRead the full guide:\nhttps://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico\n\n#BodyContouring #GLP1WeightLoss #MedicalTourism #PlasticSurgery #Mexico",
+  "chars_before_link": 404,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "format",
+          "excerpt": "",
+          "reason": "Text before the link is 546 chars (max 500).",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_1_1792460530551",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792406582Images-(PS)-(5).png",
+        "caption": "Considering body‑contouring after GLP‑1 weight loss?\n\nSignificant weight loss with GLP‑1 meds may reveal loose skin on abdomen, arms, thighs, and breasts.\nIn 2025, 82% of ASPS surgeons reported GLP‑1‑related consultation requests, many about tummy tucks and lifts.\nMexico can reduce travel distance compared with Europe or Asia, making follow‑up easier for US and Canadian patients.\n\nRead the full guide:\nhttps://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico\n\n#BodyContouring #GLP1WeightLoss #MedicalTourism #PlasticSurgery #Mexico",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

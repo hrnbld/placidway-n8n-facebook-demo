@@ -1,0 +1,59 @@
+{
+  "execution_id": 2,
+  "execution_status": "success",
+  "query": {
+    "type": "article"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Photo Post?",
+    "Facebook: Publish Photo",
+    "Publish Result",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "article",
+  "item_url": "https://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico",
+  "category": "cosmetic",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792406582Images-(PS)-(5).png",
+  "post": "Planning care abroad? Lost Weight With Ozempic or Mounjaro: Why Patients Are Considering Body Contouring in Me\n\nThat shift is now influencing plastic surgery demand.\nFor some patients, these medications can produce substantial weight reduction.\nBut losing body fat does not necessarily mean the skin contracts at the same rate.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico\n\n#MedicalTourism #HealthcareTravel #PatientGuide",
+  "chars_before_link": 364,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "published",
+    "fbPostId": "957899504078846_2457881523",
+    "scheduledFor": ""
+  },
+  "failure": null,
+  "approval_links": null
+}

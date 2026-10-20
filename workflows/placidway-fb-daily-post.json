@@ -1,0 +1,2159 @@
+{
+  "id": "PwFbDailyPost001",
+  "name": "PlacidWay -> Facebook: Daily Post",
+  "active": false,
+  "nodes": [
+    {
+      "id": "b087e415-9ced-55a3-9419-051c21055fa2",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "notes": "09:00 every day (GENERIC_TIMEZONE)",
+      "notesInFlow": true
+    },
+    {
+      "id": "f28e61a5-9ca7-511f-89c5-f592a9b775b3",
+      "name": "Manual Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "dc5f44a3-84af-569a-a60b-87b776944d55",
+      "name": "Run Now (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        400
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "placidway-run",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "6f1c2a9e-placidway-run-0001",
+      "notes": "POST /webhook/placidway-run (optional ?type=&approval=)",
+      "notesInFlow": true
+    },
+    {
+      "id": "25cb5deb-3dfe-5a38-a4c5-aaf840b103a9",
+      "name": "Ensure Table: pw_runs",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "pw_runs",
+        "columns": {
+          "column": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "started_at",
+              "type": "string"
+            },
+            {
+              "name": "finished_at",
+              "type": "string"
+            },
+            {
+              "name": "trigger",
+              "type": "string"
+            },
+            {
+              "name": "mode",
+              "type": "string"
+            },
+            {
+              "name": "content_type",
+              "type": "string"
+            },
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "item_url",
+              "type": "string"
+            },
+            {
+              "name": "item_title",
+              "type": "string"
+            },
+            {
+              "name": "image_url",
+              "type": "string"
+            },
+            {
+              "name": "post_text",
+              "type": "string"
+            },
+            {
+              "name": "chars_before_link",
+              "type": "number"
+            },
+            {
+              "name": "attempts",
+              "type": "number"
+            },
+            {
+              "name": "guardrail",
+              "type": "string"
+            },
+            {
+              "name": "fb_post_id",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "error",
+              "type": "string"
+            },
+            {
+              "name": "review_url",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      }
+    },
+    {
+      "id": "a7ffb38b-88d2-59de-9bb9-5e91ae0f27fe",
+      "name": "Ensure Table: pw_posted",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "pw_posted",
+        "columns": {
+          "column": [
+            {
+              "name": "url",
+              "type": "string"
+            },
+            {
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "name": "content_type",
+              "type": "string"
+            },
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "fb_post_id",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "posted_at",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      }
+    },
+    {
+      "id": "720a66ac-4472-5fc1-9051-2821c9a24b5b",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Config: every setting comes from environment variables, with safe defaults (dry run ON, approval OFF).\nconst env = (k, d = '') => ($env[k] === undefined || $env[k] === null || $env[k] === '' ? d : String($env[k]));\nconst bool = (k, d) => /^(1|true|yes|on)$/i.test(env(k, d ? 'true' : 'false'));\nconst num = (k, d) => (isNaN(parseFloat(env(k, ''))) ? d : parseFloat(env(k, '')));\n\nlet trigger = 'manual';\ntry { if ($('Run Now (Webhook)').isExecuted) trigger = 'webhook'; } catch (e) {}\ntry { if ($('Daily Schedule').isExecuted) trigger = 'schedule'; } catch (e) {}\n\n// Optional shared secret for the webhook trigger\nconst hook = trigger === 'webhook' ? $('Run Now (Webhook)').first().json : {};\nif (trigger === 'webhook' && env('RUN_TOKEN')) {\n  const got = hook.headers?.['x-run-token'] || hook.query?.token;\n  if (got !== env('RUN_TOKEN')) throw new Error('CONFIG_ERROR: invalid or missing run token');\n}\nconst webhookOverrides = hook.query || {};\n\nconst provider = env('LLM_PROVIDER', 'openai').toLowerCase();\nconst cfg = {\n  dryRun: bool('DRY_RUN', true),\n  approvalMode: webhookOverrides.approval !== undefined ? /^(1|true|yes|on)$/i.test(String(webhookOverrides.approval)) : bool('APPROVAL_MODE', false),\n  timezone: env('GENERIC_TIMEZONE', 'Asia/Jakarta'),\n  site: {\n    canonicalBase: 'https://www.placidway.com',\n    fetchBase: env('PW_BASE_URL', 'https://www.placidway.com').replace(/\\/$/, ''),\n    userAgent: env('PW_USER_AGENT', 'PlacidWayFBDemoBot/1.0 (+assessment demo; contact hello@herin.id)'),\n    minDelaySeconds: Math.max(1, num('PW_MIN_DELAY_SECONDS', 1.1)),\n  },\n  sitemaps: {\n    article: '/1/sitemap_articles.xml',\n    package: '/1/sitemap_packages.xml',\n    answer: '/sitemap/1/sitemap_answers.xml',\n  },\n  rotation: env('CONTENT_ROTATION', 'article,package,answer,article,package,answer,article').split(',').map((s) => s.trim()), // Mon..Sun\n  contentTypeOverride: webhookOverrides.type || env('CONTENT_TYPE_OVERRIDE', ''),\n  candidateWindow: num('CANDIDATE_WINDOW', 30),\n  skipUrlPattern: env('SKIP_URL_PATTERN', ''), // optional brand-safety regex, e.g. autism|terminal\n  varietyLookback: num('VARIETY_LOOKBACK', 3),\n  dedupeDryRun: bool('DEDUPE_INCLUDE_DRY_RUN', true),\n  sourceMaxChars: num('SOURCE_MAX_CHARS', 9000),\n  imageVariant: webhookOverrides.image || env('IMAGE_VARIANT', 'original'), // original = raw CDN file, og = PlacidWay's 1200x630 social crop, none = link post\n  allowPrices: bool('ALLOW_PRICES', false),\n  maxRewrites: num('MAX_REWRITES', 1),\n  maxCharsBeforeLink: num('MAX_CHARS_BEFORE_LINK', 500),\n  llm: {\n    provider: provider === 'anthropic' ? 'anthropic' : 'openai',\n    baseUrl: env('LLM_BASE_URL', provider === 'anthropic' ? 'https://api.anthropic.com' : 'https://api.openai.com/v1'),\n    model: env('LLM_MODEL', provider === 'anthropic' ? 'claude-sonnet-4-5' : 'gpt-4o-mini'),\n    reviewModel: env('LLM_REVIEW_MODEL', ''),\n    apiKey: env('LLM_API_KEY', ''),\n    temperature: num('LLM_TEMPERATURE', 0.4),\n    jsonMode: bool('LLM_JSON_MODE', true),\n    maxTries: num('LLM_MAX_TRIES', 3),\n    timeoutMs: num('LLM_TIMEOUT_MS', 60000),\n  },\n  fb: {\n    graphBase: env('FB_GRAPH_BASE_URL', 'https://graph.facebook.com').replace(/\\/$/, ''),\n    version: env('FB_GRAPH_VERSION', 'v24.0'),\n    pageId: env('FB_PAGE_ID', ''),\n    pageName: env('FB_PAGE_NAME', 'NeuPix'),\n    allowedPageIds: env('FB_ALLOWED_PAGE_IDS', env('FB_PAGE_ID', '')).split(',').map((s) => s.trim()).filter(Boolean),\n    scheduleDelayMinutes: webhookOverrides.schedule !== undefined ? +webhookOverrides.schedule || 0 : num('FB_SCHEDULE_DELAY_MINUTES', 0),\n    hasToken: !!env('FB_PAGE_TOKEN', ''),\n  },\n  review: { webhookUrl: env('REVIEW_WEBHOOK_URL', env('ALERT_WEBHOOK_URL', '')), format: env('WEBHOOK_FORMAT', 'slack') },\n  alert: { webhookUrl: env('ALERT_WEBHOOK_URL', ''), format: env('WEBHOOK_FORMAT', 'slack') },\n};\nif (cfg.llm.apiKey) cfg.llm.apiKeySet = true;\n\n// Safety checks before doing any work\nconst problems = [];\nif (!cfg.dryRun) {\n  if (!cfg.fb.pageId) problems.push('FB_PAGE_ID is required when DRY_RUN=false');\n  if (!cfg.fb.hasToken) problems.push('FB_PAGE_TOKEN is required when DRY_RUN=false');\n  if (cfg.fb.pageId && !cfg.fb.allowedPageIds.includes(cfg.fb.pageId)) problems.push('FB_PAGE_ID is not in FB_ALLOWED_PAGE_IDS (publishing is restricted to your own test page)');\n}\nif (!cfg.llm.apiKey) problems.push('LLM_API_KEY is not set');\nif (problems.length) throw new Error('CONFIG_ERROR: ' + problems.join('; '));\n\nconst run = { id: String($execution.id), trigger, startedAt: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC', mode: (cfg.dryRun ? 'dry_run' : 'live') + (cfg.approvalMode ? '+approval' : '+auto') };\n// Never carry the API key forward in item data (execution logs) - nodes read it from $env when needed.\ndelete cfg.llm.apiKey;\nreturn [{ json: { cfg, run } }];\n"
+      },
+      "onError": "continueErrorOutput",
+      "notes": "All settings from env; DRY_RUN defaults to true",
+      "notesInFlow": true
+    },
+    {
+      "id": "b6968b0b-5a0e-50a2-a50a-22143a29a188",
+      "name": "Load Posted History",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_posted"
+        },
+        "returnAll": true
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "d8daa907-359f-521e-92b0-c7ae17a6f51d",
+      "name": "Plan Run (Rotation)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Plan Run: choose today's content type (weekly rotation) and load what was already posted.\nconst { cfg, run } = $('Config').first().json;\nconst rows = $input.all().map((i) => i.json).filter((r) => r && r.url);\nconst posted = rows.filter((r) => cfg.dedupeDryRun || r.status !== 'dry_run');\nposted.sort((a, b) => String(b.posted_at).localeCompare(String(a.posted_at)));\n\nconst weekday = new Date().toLocaleDateString('en-US', { weekday: 'short', timeZone: cfg.timezone });\nconst idx = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(weekday);\nlet contentType = cfg.contentTypeOverride || cfg.rotation[idx] || 'article';\nif (!cfg.sitemaps[contentType]) contentType = 'article';\n\nconst sitemapPath = cfg.sitemaps[contentType];\nreturn [{ json: {\n  cfg, run,\n  plan: { weekday, contentType, sitemapPath, sitemapUrl: cfg.site.canonicalBase + sitemapPath, sitemapFetchUrl: cfg.site.fetchBase + sitemapPath,\n          robotsFetchUrl: cfg.site.fetchBase + '/robots.txt' },\n  history: {\n    postedUrls: posted.map((r) => r.url),\n    recentCategories: posted.slice(0, cfg.varietyLookback).map((r) => r.category),\n    recentTypes: posted.slice(0, cfg.varietyLookback).map((r) => r.content_type),\n  },\n} }];\n"
+      },
+      "notes": "Weekday -> content type",
+      "notesInFlow": true
+    },
+    {
+      "id": "750cd483-f4b0-563a-888f-f81405d457e9",
+      "name": "Throttle 1 req/s (start)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        360
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": "={{ $json.cfg.site.minDelaySeconds }}",
+        "unit": "seconds"
+      },
+      "webhookId": "0b9a4c7e-placidway-throttle-0",
+      "notes": "Spacing even for back-to-back manual runs",
+      "notesInFlow": true
+    },
+    {
+      "id": "a3d3c5b6-7524-5cf8-a90c-f8e122f790f1",
+      "name": "Fetch robots.txt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $('Plan Run (Rotation)').first().json.plan.robotsFetchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $('Plan Run (Rotation)').first().json.cfg.site.userAgent }}"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "notes": "",
+      "notesInFlow": false
+    },
+    {
+      "id": "6bdf02d0-d0bf-5b66-a537-114cbd15c9e9",
+      "name": "Apply robots.txt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Apply robots.txt: parse the rules for our user agent (falls back to '*'), honour Crawl-delay,\n// and refuse to continue if the sitemap itself is disallowed.\nconst state = $('Plan Run (Rotation)').first().json;\nconst res = $input.first().json;\nconst text = String(res.data ?? res.body ?? '');\nif ((res.statusCode || 200) >= 400 && res.statusCode !== 404) throw new Error(`SOURCE_DOWN: robots.txt returned HTTP ${res.statusCode}`);\n\nfunction parseRobots(txt, ua) {\n  const groups = []; let cur = null; let lastWasUA = false;\n  for (let line of txt.split(/\\r?\\n/)) {\n    line = line.replace(/#.*$/, '').trim(); if (!line) continue;\n    const m = line.match(/^([A-Za-z-]+)\\s*:\\s*(.*)$/); if (!m) continue;\n    const key = m[1].toLowerCase(), val = m[2].trim();\n    if (key === 'user-agent') { if (!lastWasUA) { cur = { agents: [], rules: [], crawlDelay: null }; groups.push(cur); } cur.agents.push(val.toLowerCase()); lastWasUA = true; continue; }\n    lastWasUA = false; if (!cur) continue;\n    if (key === 'allow' || key === 'disallow') { if (val) cur.rules.push({ allow: key === 'allow', path: val }); }\n    else if (key === 'crawl-delay') cur.crawlDelay = parseFloat(val);\n  }\n  const token = ua.toLowerCase().split('/')[0];\n  return groups.find((g) => g.agents.some((a) => a !== '*' && token.includes(a))) || groups.find((g) => g.agents.includes('*')) || { rules: [], crawlDelay: null };\n}\nconst group = res.statusCode === 404 ? { rules: [], crawlDelay: null } : parseRobots(text, state.cfg.site.userAgent);\nconst robots = { rules: group.rules, crawlDelay: group.crawlDelay };\n\n// Longest-match wins; Allow wins ties (RFC 9309). Supports * and $ wildcards.\nfunction isAllowed(path, rules) {\n  let best = null;\n  for (const r of rules) {\n    const re = new RegExp('^' + r.path.replace(/[.+?^{}()|[\\]\\\\]/g, '\\\\$&').replace(/\\*/g, '.*').replace(/\\\\\\$$/, '$'));\n    if (re.test(path) && (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.allow))) best = r;\n  }\n  return !best || best.allow;\n}\nif (!isAllowed(state.plan.sitemapPath, robots.rules)) throw new Error(`ROBOTS_DISALLOWED: ${state.plan.sitemapPath} is disallowed by robots.txt`);\nconst throttleSeconds = Math.max(state.cfg.site.minDelaySeconds, robots.crawlDelay || 0);\nreturn [{ json: { ...state, robots, throttleSeconds } }];\n"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "01682d34-36a6-501f-8fa9-ce4e02c2197c",
+      "name": "Throttle 1 req/s (a)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        200
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": "={{ $json.throttleSeconds }}",
+        "unit": "seconds"
+      },
+      "webhookId": "0b9a4c7e-placidway-throttle-a"
+    },
+    {
+      "id": "293c2079-1026-50c1-b08f-980f8c3e562e",
+      "name": "Fetch Sitemap",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $('Apply robots.txt').first().json.plan.sitemapFetchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $('Apply robots.txt').first().json.cfg.site.userAgent }}"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "notes": "One request lists every item + lastmod + image",
+      "notesInFlow": true
+    },
+    {
+      "id": "b991816f-edca-5910-ae6d-537ad17cecae",
+      "name": "Select Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Select Item: parse the sitemap, drop anything disallowed or already posted, prefer the newest\n// item whose treatment category differs from the last few posts (variety rule).\nconst state = $('Apply robots.txt').first().json;\nconst xml = String($input.first().json.data ?? $input.first().json.body ?? '');\nif (!/<urlset/i.test(xml)) throw new Error('PARSE_FAILED: sitemap response is not a <urlset> document' + (/just a moment|cf-mitigated|challenge/i.test(xml) ? ' (looks like a Cloudflare challenge page)' : ''));\n\nfunction isAllowed(path, rules) {\n  let best = null;\n  for (const r of rules) {\n    const re = new RegExp('^' + r.path.replace(/[.+?^{}()|[\\]\\\\]/g, '\\\\$&').replace(/\\*/g, '.*').replace(/\\\\\\$$/, '$'));\n    if (re.test(path) && (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.allow))) best = r;\n  }\n  return !best || best.allow;\n}\nconst CATEGORIES = [\n  ['cardiac', /cardiac|heart|cabg|coronary|valve|angioplasty/],\n  ['cancer', /cancer|oncolog|tumou?r|lymphoma|leukemia|carcinoma|melanoma/],\n  ['neuro', /huntington|parkinson|alzheimer|autism|stroke|multiple-sclerosis|\\bms\\b|neuro|\\bals\\b|cerebral/],\n  ['stem-cell', /stem-?cell|regenerative|\\bprp\\b|exosome|cellular/],\n  ['cosmetic', /liposuction|tummy|abdominoplasty|plastic|cosmetic|breast|rhinoplasty|facelift|\\bbbl\\b|body-contour|eyelid|mommy/],\n  ['bariatric', /bariatric|gastric|weight-loss|sleeve|obesity|ozempic|mounjaro|glp/],\n  ['dental', /dental|implant|veneer|teeth|tooth|crown|all-on/],\n  ['orthopedic', /knee|hip|spine|orthop|joint|shoulder|arthritis/],\n  ['fertility', /ivf|fertility|surrogacy|egg-freez|infertility/],\n  ['hair', /hair/], ['eye', /lasik|eye|cataract|vision/],\n];\nconst categoryOf = (url) => { const s = url.toLowerCase(); for (const [c, re] of CATEGORIES) if (re.test(s)) return c; return 'other'; };\n\nconst entries = [];\nfor (const m of xml.matchAll(/<url>([\\s\\S]*?)<\\/url>/g)) {\n  const block = m[1];\n  const loc = (block.match(/<loc>\\s*([^<\\s]+)\\s*<\\/loc>/) || [])[1];\n  if (!loc) continue;\n  const lastmod = (block.match(/<lastmod>\\s*([^<\\s]+)\\s*<\\/lastmod>/) || [])[1] || '';\n  const image = (block.match(/<image:loc>\\s*([^<\\s]+)\\s*<\\/image:loc>/) || [])[1] || '';\n  const id = +((loc.match(/\\/(\\d+)\\//) || [])[1] || 0);\n  entries.push({ url: loc.replace(/&amp;/g, '&'), lastmod, sitemapImage: image.replace(/&amp;/g, '&'), id });\n}\nconst posted = new Set(state.history.postedUrls);\nconst base = state.cfg.site.canonicalBase;\nconst fresh = entries\n  .filter((e) => e.url.startsWith(base + '/'))\n  .filter((e) => isAllowed(e.url.slice(base.length), state.robots.rules))\n  .filter((e) => !posted.has(e.url))\n  .filter((e) => !state.cfg.skipUrlPattern || !new RegExp(state.cfg.skipUrlPattern, 'i').test(e.url))\n  .sort((a, b) => b.lastmod.localeCompare(a.lastmod) || b.id - a.id)\n  .slice(0, state.cfg.candidateWindow)\n  .map((e) => ({ ...e, category: categoryOf(e.url) }));\nif (!fresh.length) throw new Error(`NO_NEW_CONTENT: all ${entries.length} '${state.plan.contentType}' sitemap items are already posted or disallowed`);\n\nconst recent = new Set(state.history.recentCategories);\nconst pick = fresh.find((e) => !recent.has(e.category)) || fresh[0];\nconst item = { ...pick, contentType: state.plan.contentType, fetchUrl: state.cfg.site.fetchBase + pick.url.slice(base.length),\n  selection: { sitemapEntries: entries.length, candidates: fresh.length, varietySkipped: fresh.indexOf(pick), avoidedCategories: [...recent] } };\nreturn [{ json: { ...state, item } }];\n"
+      },
+      "onError": "continueErrorOutput",
+      "notes": "Not posted before, newest, varied category",
+      "notesInFlow": true
+    },
+    {
+      "id": "faa4dbb8-9731-52bd-8d62-46ac83f4be63",
+      "name": "Throttle 1 req/s (b)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        200
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": "={{ $json.throttleSeconds }}",
+        "unit": "seconds"
+      },
+      "webhookId": "0b9a4c7e-placidway-throttle-b"
+    },
+    {
+      "id": "7f27e321-ebde-5c75-b8a5-66d230ca3f09",
+      "name": "Fetch Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $('Select Item').first().json.item.fetchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $('Select Item').first().json.cfg.site.userAgent }}"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "notes": "",
+      "notesInFlow": false
+    },
+    {
+      "id": "8a6f7159-7972-53ae-a62b-daaf8f625e8b",
+      "name": "Parse Page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ---- shared helpers (inlined by scripts/build_workflows.py) ----\nconst decodeEntities = (s) => String(s || '')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&#0?39;|&apos;|&#x27;/g, \"'\")\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;|&lsquo;/g, \"'\").replace(/&ldquo;|&rdquo;/g, '\"')\n  .replace(/&ndash;/g, '-').replace(/&mdash;/g, '-').replace(/&hellip;/g, '...')\n  .replace(/&#(\\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));\nconst norm = (s) => decodeEntities(s).toLowerCase().replace(/[\\u2018\\u2019\\u201c\\u201d]/g, \"'\").replace(/[^a-z0-9]+/g, ' ').trim();\nconst nowIso = () => new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';\n\n// Parse Page: detect bot walls, then extract title, summary, featured image and the main body text.\nconst state = $('Select Item').first().json;\nconst res = $input.first().json;\nconst html = String(res.data ?? res.body ?? '');\nconst status = res.statusCode || 200;\nconst headers = res.headers || {};\nif (headers['cf-mitigated'] || /<title>\\s*Just a moment|challenge-platform|cf-chl-/i.test(html)) {\n  throw new Error(`SOURCE_BLOCKED: Cloudflare challenge on ${state.item.url} (HTTP ${status}). The host IP is being challenged; run from a different network or ask PlacidWay to allow-list the bot.`);\n}\nif (status >= 400) throw new Error(`SOURCE_DOWN: ${state.item.url} returned HTTP ${status}`);\n\nconst meta = (key) => {\n  const a = html.match(new RegExp(`<meta[^>]+(?:property|name)=[\"']${key}[\"'][^>]*content=[\"']([^\"']*)[\"']`, 'i'));\n  const b = html.match(new RegExp(`<meta[^>]+content=[\"']([^\"']*)[\"'][^>]*(?:property|name)=[\"']${key}[\"']`, 'i'));\n  return decodeEntities((a || b || [])[1] || '').trim();\n};\nconst strip = (s) => decodeEntities(String(s).replace(/<[^>]+>/g, ' ')).replace(/\\s+/g, ' ').trim();\nconst h1 = strip((html.match(/<h1[^>]*>([\\s\\S]*?)<\\/h1>/i) || [])[1] || '');\nconst docTitle = strip((html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i) || [])[1] || '');\nconst canonical = (html.match(/<link[^>]+rel=[\"']canonical[\"'][^>]*href=[\"']([^\"']+)[\"']/i) || [])[1] || state.item.url;\n\n// Main content = everything after the H1, cut at the first block that is not part of the page body\n// (disclaimer, references, quote form, related listings, footer). Related listings carry other prices,\n// so cutting them out is part of the \"no invented prices\" guardrail.\nlet main = html;\nconst h1Pos = html.search(/<\\/h1>/i);\nif (h1Pos > -1) main = html.slice(h1Pos + 5);\n// Drop share/quote popups first: on live pages they sit right after the H1 and would end the body early.\nmain = main.replace(/<!--[\\s\\S]*?-->/g, ' ').replace(/<(script|style|noscript|svg)[\\s\\S]*?<\\/\\1>/gi, ' ')\n  .replace(/<[^>]*>/g, (t) => t.replace(/\\s+/g, ' ')); // multi-line tags would leak into the text once split by line\nconst STOP = /<(h[1-6]|div|section|p|strong|span)[^>]*>\\s*(Medical Disclaimer|References|Request your Free Quote|About Article|Trusted Medical Tourism Platform|Unlock the Best|Related (Articles|Packages)|Share this listing)\\b/gi;\n// Cut at the first stop marker that comes after real content (>= 600 chars of text), skipping early popups.\nfor (const m of main.matchAll(STOP)) {\n  if (strip(main.slice(0, m.index)).length >= 600) { main = main.slice(0, m.index); break; }\n}\nmain = main\n  .replace(/<(script|style|noscript|svg|form|nav|footer|header|iframe)[\\s\\S]*?<\\/\\1>/gi, ' ')\n  .replace(/<\\/(td|th)>/gi, ' | ')\n  .replace(/<(br|\\/p|\\/h[1-6]|\\/li|\\/tr|\\/div|\\/table|\\/ul|\\/ol)[^>]*>/gi, '\\n')\n  .replace(/<li[^>]*>/gi, '\\n- ');\nconst body = main.split('\\n')\n  .map((l) => strip(l).replace(/\\s*\\|\\s*$/, ''))\n  .filter((l) => l && l !== '-' && !/^(copy link|share this|https?:\\/\\/\\S+)$/i.test(l))\n  .join('\\n')\n  .slice(0, 20000);\nif (body.length < 400) throw new Error(`PARSE_FAILED: main content too short (${body.length} chars) on ${state.item.url} - page layout may have changed`);\n\n// Featured image: og:image, else the sitemap <image:loc>, else first content image.\nlet image = meta('og:image') || state.item.sitemapImage || ((main.match(/<img[^>]+src=[\"'](https:[^\"']+)[\"']/i) || [])[1] || '');\nif (state.cfg.imageVariant === 'original') {\n  const m = image.match(/\\/cdn-cgi\\/image\\/[^/]+\\/(https?:\\/\\/.+)$/); // unwrap PlacidWay's CDN resizer to the original file\n  if (m) image = m[1];\n}\nif (state.cfg.imageVariant === 'none') image = ''; // forces a text+link post (/feed)\nconst description = meta('og:description') || meta('description') || body.split('\\n').find((l) => l.length > 80)?.slice(0, 300) || '';\nconst page = { title: h1 || meta('og:title') || docTitle, metaTitle: meta('og:title') || docTitle, description, image, canonical, body, bodyChars: body.length };\nreturn [{ json: { ...state, page, attempt: 0, guardrailHistory: [] } }];\n"
+      },
+      "onError": "continueErrorOutput",
+      "notes": "Title, summary, image, main body",
+      "notesInFlow": true
+    },
+    {
+      "id": "b21154d5-3bc3-5483-b4c8-8ba547b15c24",
+      "name": "LLM: Write Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ---- shared helpers (inlined by scripts/build_workflows.py) ----\nconst decodeEntities = (s) => String(s || '')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&#0?39;|&apos;|&#x27;/g, \"'\")\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;|&lsquo;/g, \"'\").replace(/&ldquo;|&rdquo;/g, '\"')\n  .replace(/&ndash;/g, '-').replace(/&mdash;/g, '-').replace(/&hellip;/g, '...')\n  .replace(/&#(\\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));\nconst norm = (s) => decodeEntities(s).toLowerCase().replace(/[\\u2018\\u2019\\u201c\\u201d]/g, \"'\").replace(/[^a-z0-9]+/g, ' ').trim();\nconst nowIso = () => new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';\n\n// ---- provider-agnostic LLM adapter (OpenAI-compatible or Anthropic) ----\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\nfunction parseJsonLoose(text) {\n  let t = String(text || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();\n  const a = t.indexOf('{'), b = t.lastIndexOf('}');\n  if (a === -1 || b === -1) throw new Error('LLM_BAD_OUTPUT: no JSON object in model response');\n  return JSON.parse(t.slice(a, b + 1));\n}\nasync function callLLM(ctx, llm, system, user) {\n  if (!llm.apiKey) throw new Error('LLM_CONFIG: LLM_API_KEY is not set');\n  const base = llm.baseUrl.replace(/\\/$/, '');\n  let req;\n  if (llm.provider === 'anthropic') {\n    req = { method: 'POST', url: base + '/v1/messages', json: true, timeout: llm.timeoutMs,\n      headers: { 'x-api-key': llm.apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },\n      body: { model: llm.model, max_tokens: 1000, temperature: llm.temperature, system, messages: [{ role: 'user', content: user }] } };\n  } else {\n    const body = { model: llm.model, temperature: llm.temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };\n    if (llm.jsonMode) body.response_format = { type: 'json_object' };\n    req = { method: 'POST', url: base + '/chat/completions', json: true, timeout: llm.timeoutMs,\n      headers: { Authorization: 'Bearer ' + llm.apiKey, 'content-type': 'application/json' }, body };\n  }\n  let lastErr;\n  for (let attempt = 1; attempt <= llm.maxTries; attempt++) {\n    try {\n      const res = await ctx.helpers.httpRequest(req);\n      const text = llm.provider === 'anthropic'\n        ? (res.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('')\n        : res.choices?.[0]?.message?.content;\n      return { data: parseJsonLoose(text), raw: text, attempts: attempt };\n    } catch (e) {\n      lastErr = e;\n      const m = String(e.message || e);\n      const status = e.httpCode || e.statusCode || e.response?.status || +((m.match(/status code (\\d{3})/) || [])[1] || 0);\n      const retryable = !status || status === 429 || status >= 500 || /LLM_BAD_OUTPUT|Unexpected token|JSON/.test(m);\n      if (!retryable || attempt === llm.maxTries) {\n        throw new Error(`LLM_ERROR: ${llm.provider} call failed after ${attempt} attempt(s)` + (status ? ` (HTTP ${status})` : '') + `: ${m.slice(0, 300)}`);\n      }\n      await sleep(2000 * Math.pow(3, attempt - 1)); // 2s, 6s\n    }\n  }\n  throw lastErr;\n}\n\n// ---- prompts ----\nconst WRITER_SYSTEM = `ROLE: WRITER\nYou write short, trustworthy Facebook posts that share one PlacidWay page (a medical tourism marketplace).\nUse ONLY facts stated in the SOURCE. If something is not in the SOURCE, leave it out.\n\nStructure:\n- hook: one line, max 110 characters, curiosity or a question, no clickbait.\n- lines: 2 to 4 short lines (max 120 characters each). Each line states one useful fact or takeaway from the SOURCE.\n- cta: one calm line inviting people to read the full page (e.g. \"Read the full guide:\"). No pressure, no urgency, no \"book now\".\n- hashtags: 3 to 5 relevant hashtags, CamelCase, no spaces.\n- hook + lines + cta together must stay under 430 characters. Do NOT include any URL (it is added automatically).\n\nHard rules (a post that breaks one is rejected):\n1. No medical claims and no outcome promises: never say a treatment cures, heals, reverses, fixes, eliminates, restores, guarantees, is proven, is safe/safest/best, is painless or risk-free, and never state success rates or results people will get. Use neutral wording such as \"explores\", \"compares\", \"explains\", \"what to ask\".\n2. Prices: if ALLOW_PRICES is false, mention no prices, costs, savings or currency amounts at all. If true, only copy exact figures from the SOURCE.\n3. No invented facts: every number, name, place and claim must appear in the SOURCE.\n4. At most 2 emojis in the whole post.\n\nReturn ONLY a JSON object:\n{\"hook\": \"...\", \"lines\": [\"...\", \"...\"], \"cta\": \"...\", \"hashtags\": [\"#...\"],\n \"evidence\": [{\"line\": 0, \"quote\": \"verbatim sentence or phrase from SOURCE that supports lines[0]\"}]}\nProvide one evidence item per line; each quote must be copied exactly from the SOURCE.`;\n\nconst REVIEWER_SYSTEM = `ROLE: REVIEWER\nYou are a strict compliance reviewer for healthcare social media posts. Compare the POST with the SOURCE.\nFlag an issue for anything in the POST that is:\n- medical_claim: says or implies a treatment cures, heals, reverses, fixes, works, is safe/proven/best;\n- outcome_promise: promises or implies results, recovery or success for the reader;\n- invented_price: any price, cost, saving or currency amount that is not stated exactly in the SOURCE (or any price at all when ALLOW_PRICES is false);\n- unsupported_fact: any fact, number, name or place not supported by the SOURCE;\n- misleading: exaggeration, fear or urgency tactics, or a framing the SOURCE does not support.\nDo not flag the generic call to action, the hashtags, or neutral paraphrases of the SOURCE.\nReturn ONLY a JSON object: {\"pass\": true|false, \"issues\": [{\"type\": \"...\", \"excerpt\": \"...\", \"reason\": \"...\"}]}.\npass must be false if there is at least one issue.`;\n\nfunction sourceBlock(item, page, cfg) {\n  return `<<<SOURCE\nCONTENT TYPE: ${item.contentType}\nTITLE: ${page.title}\nURL: ${item.url}\nDESCRIPTION: ${page.description || ''}\nBODY:\n${page.body.slice(0, cfg.sourceMaxChars)}\nSOURCE>>>`;\n}\n\n// LLM: Write Post (first draft or rewrite). Provider is chosen by LLM_PROVIDER.\nconst state = $input.first().json;\nconst llm = { ...state.cfg.llm, apiKey: $env.LLM_API_KEY };\nlet user = `Write one Facebook post for the page \"${state.cfg.fb.pageName}\" that shares this PlacidWay ${state.item.contentType === 'answer' ? 'patient Q&A answer' : state.item.contentType}.\nALLOW_PRICES: ${state.cfg.allowPrices}\n${sourceBlock(state.item, state.page, state.cfg)}`;\nif (state.rewrite) {\n  user += `\n\nPREVIOUS ATTEMPT FAILED these checks - fix every one of them:\n${state.rewrite.issues.map((i) => `- [${i.type}] ${i.excerpt ? '\"' + i.excerpt + '\" - ' : ''}${i.reason}`).join('\\n')}\nPrevious draft: ${JSON.stringify(state.rewrite.previous)}`;\n}\nconst out = await callLLM(this, llm, WRITER_SYSTEM, user);\nconst d = out.data || {};\nconst draft = {\n  hook: String(d.hook || '').trim(),\n  lines: (Array.isArray(d.lines) ? d.lines : []).map((s) => String(s).trim()).filter(Boolean),\n  cta: String(d.cta || '').trim(),\n  hashtags: (Array.isArray(d.hashtags) ? d.hashtags : []).map((h) => '#' + String(h).replace(/^#+/, '').replace(/[^\\p{L}\\p{N}_]/gu, '')).filter((h) => h.length > 1),\n  evidence: Array.isArray(d.evidence) ? d.evidence : [],\n};\nconst link = state.item.url;\nconst before = [draft.hook, '', ...draft.lines, '', draft.cta].join('\\n').trim();\nconst message = `${before}\\n${link}\\n\\n${draft.hashtags.join(' ')}`;\nconst attempt = (state.attempt || 0) + 1;\nreturn [{ json: { ...state, attempt, draft, post: { message, beforeLink: before, charsBeforeLink: [...before].length, link }, llmAttempts: out.attempts } }];\n"
+      },
+      "onError": "continueErrorOutput",
+      "notes": "OpenAI-compatible or Anthropic",
+      "notesInFlow": true
+    },
+    {
+      "id": "3cea89ca-c634-5919-bdd1-8843fa0d40da",
+      "name": "Guardrail 1: Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ---- shared helpers (inlined by scripts/build_workflows.py) ----\nconst decodeEntities = (s) => String(s || '')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&#0?39;|&apos;|&#x27;/g, \"'\")\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;|&lsquo;/g, \"'\").replace(/&ldquo;|&rdquo;/g, '\"')\n  .replace(/&ndash;/g, '-').replace(/&mdash;/g, '-').replace(/&hellip;/g, '...')\n  .replace(/&#(\\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));\nconst norm = (s) => decodeEntities(s).toLowerCase().replace(/[\\u2018\\u2019\\u201c\\u201d]/g, \"'\").replace(/[^a-z0-9]+/g, ' ').trim();\nconst nowIso = () => new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';\n\n// Guardrail 1 - deterministic rules. Cheap, explainable, and impossible to talk around.\nconst state = $input.first().json;\nconst { draft, post, page, cfg } = state;\nconst issues = [];\nconst add = (type, excerpt, reason) => issues.push({ type, excerpt, reason, by: 'rules' });\nconst sourceNorm = norm(page.title + ' ' + page.description + ' ' + page.body);\nconst sourceRaw = page.title + ' ' + page.description + ' ' + page.body;\n\n// Format\nif (post.charsBeforeLink > cfg.maxCharsBeforeLink) add('format', '', `Text before the link is ${post.charsBeforeLink} chars (max ${cfg.maxCharsBeforeLink}).`);\nif (!draft.hook) add('format', '', 'Missing hook.');\nif (draft.lines.length < 2 || draft.lines.length > 4) add('format', '', `Needs 2-4 value lines, got ${draft.lines.length}.`);\nif (!draft.cta) add('format', '', 'Missing call to action.');\nif (draft.hashtags.length < 3 || draft.hashtags.length > 5) add('format', '', `Needs 3-5 hashtags, got ${draft.hashtags.length}.`);\nconst urls = post.message.match(/https?:\\/\\/\\S+/g) || [];\nif (urls.length !== 1 || urls[0] !== state.item.url) add('format', urls.join(' '), 'Post must contain exactly one URL: the source page.');\nconst emojis = post.message.match(/\\p{Extended_Pictographic}/gu) || [];\nif (emojis.length > 2) add('format', emojis.join(''), 'More than 2 emojis.');\n\n// Medical claims / outcome promises (checked on the text the reader sees, hashtags included)\nconst text = post.beforeLink + ' ' + draft.hashtags.join(' ');\nconst BANNED = [\n  [/\\bcur(e|es|ed|ing)\\b/i, 'medical_claim'], [/\\bheal(s|ed|ing)?\\b/i, 'medical_claim'], [/\\brevers(e|es|ed|ing)\\b/i, 'medical_claim'],\n  [/\\beliminat(e|es|ed|ing)\\b/i, 'medical_claim'], [/\\bproven\\b|\\bclinically proven\\b/i, 'medical_claim'], [/\\bmiracle\\b/i, 'medical_claim'],\n  [/\\bsafest\\b|\\b100% safe\\b|\\bcompletely safe\\b|\\brisk[- ]free\\b|\\bno (side effects|risks?)\\b/i, 'medical_claim'],\n  [/\\bpainless\\b/i, 'medical_claim'], [/\\bbest (doctor|surgeon|clinic|hospital|treatment|results?)\\b/i, 'medical_claim'],\n  [/\\bguarantee(d|s)?\\b/i, 'outcome_promise'], [/\\bsuccess rate\\b/i, 'outcome_promise'], [/\\b100\\s?%/i, 'outcome_promise'],\n  [/\\bpermanent(ly)? (results?|fix|solution)\\b/i, 'outcome_promise'], [/\\bwill (fix|cure|restore|remove|repair|regrow|look)\\b/i, 'outcome_promise'],\n  [/\\blife[- ]changing results\\b|\\bdramatic results\\b/i, 'outcome_promise'],\n];\nfor (const [re, type] of BANNED) { const m = text.match(re); if (m) add(type, m[0], 'Forbidden claim wording.'); }\n\n// Prices: none at all unless ALLOW_PRICES; if allowed, every amount must appear in the source verbatim.\nconst PRICE = /(?:US\\$|\\$|€|£|USD|EUR|GBP)\\s?\\d[\\d,.]*(?:\\s?(?:k|K))?|\\d[\\d,.]*\\s?(?:USD|EUR|GBP|dollars|euros)\\b/g;\nfor (const m of post.beforeLink.match(PRICE) || []) {\n  if (!cfg.allowPrices) add('invented_price', m, 'Prices are disabled (ALLOW_PRICES=false).');\n  else if (!sourceRaw.replace(/\\s/g, '').includes(m.replace(/\\s/g, ''))) add('invented_price', m, 'Price not found verbatim in the source page.');\n}\nif (!cfg.allowPrices && /\\b(cheap|cheapest|affordable|save up to|savings?|discount|cost[s]? less)\\b/i.test(post.beforeLink)) {\n  const m = post.beforeLink.match(/\\b(cheap|cheapest|affordable|save up to|savings?|discount|cost[s]? less)\\b/i);\n  add('invented_price', m[0], 'Price/saving framing is disabled (ALLOW_PRICES=false).');\n}\n\n// Every number in the post must exist in the source (catches invented stats, ages, durations).\nconst srcNums = new Set((sourceRaw.match(/\\d[\\d,.]*/g) || []).map((n) => n.replace(/[,.]+$/, '').replace(/,/g, '')));\nfor (const n of post.beforeLink.match(/\\d[\\d,.]*/g) || []) {\n  const k = n.replace(/[,.]+$/, '').replace(/,/g, '');\n  if (k && !srcNums.has(k)) add('unsupported_fact', n, 'Number not found in the source page.');\n}\n\n// Grounding: each value line needs a supporting quote that really exists in the source.\ndraft.lines.forEach((line, i) => {\n  const ev = draft.evidence.find((e) => +e.line === i);\n  if (!ev || !ev.quote) return add('unsupported_fact', line.slice(0, 80), 'No supporting quote provided for this line.');\n  const q = norm(ev.quote);\n  if (q.length < 12 || !sourceNorm.includes(q)) add('unsupported_fact', String(ev.quote).slice(0, 80), 'Supporting quote not found in the source page.');\n});\n\nreturn [{ json: { ...state, rules: { pass: issues.length === 0, issues } } }];\n"
+      },
+      "notes": "Length, claims, prices, numbers, quotes",
+      "notesInFlow": true
+    },
+    {
+      "id": "a2a37b8e-27c6-572b-b52c-f6d43a7d816f",
+      "name": "Guardrail 2: LLM Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// ---- shared helpers (inlined by scripts/build_workflows.py) ----\nconst decodeEntities = (s) => String(s || '')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&#0?39;|&apos;|&#x27;/g, \"'\")\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;|&lsquo;/g, \"'\").replace(/&ldquo;|&rdquo;/g, '\"')\n  .replace(/&ndash;/g, '-').replace(/&mdash;/g, '-').replace(/&hellip;/g, '...')\n  .replace(/&#(\\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));\nconst norm = (s) => decodeEntities(s).toLowerCase().replace(/[\\u2018\\u2019\\u201c\\u201d]/g, \"'\").replace(/[^a-z0-9]+/g, ' ').trim();\nconst nowIso = () => new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';\n\n// ---- provider-agnostic LLM adapter (OpenAI-compatible or Anthropic) ----\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\nfunction parseJsonLoose(text) {\n  let t = String(text || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();\n  const a = t.indexOf('{'), b = t.lastIndexOf('}');\n  if (a === -1 || b === -1) throw new Error('LLM_BAD_OUTPUT: no JSON object in model response');\n  return JSON.parse(t.slice(a, b + 1));\n}\nasync function callLLM(ctx, llm, system, user) {\n  if (!llm.apiKey) throw new Error('LLM_CONFIG: LLM_API_KEY is not set');\n  const base = llm.baseUrl.replace(/\\/$/, '');\n  let req;\n  if (llm.provider === 'anthropic') {\n    req = { method: 'POST', url: base + '/v1/messages', json: true, timeout: llm.timeoutMs,\n      headers: { 'x-api-key': llm.apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },\n      body: { model: llm.model, max_tokens: 1000, temperature: llm.temperature, system, messages: [{ role: 'user', content: user }] } };\n  } else {\n    const body = { model: llm.model, temperature: llm.temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };\n    if (llm.jsonMode) body.response_format = { type: 'json_object' };\n    req = { method: 'POST', url: base + '/chat/completions', json: true, timeout: llm.timeoutMs,\n      headers: { Authorization: 'Bearer ' + llm.apiKey, 'content-type': 'application/json' }, body };\n  }\n  let lastErr;\n  for (let attempt = 1; attempt <= llm.maxTries; attempt++) {\n    try {\n      const res = await ctx.helpers.httpRequest(req);\n      const text = llm.provider === 'anthropic'\n        ? (res.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('')\n        : res.choices?.[0]?.message?.content;\n      return { data: parseJsonLoose(text), raw: text, attempts: attempt };\n    } catch (e) {\n      lastErr = e;\n      const m = String(e.message || e);\n      const status = e.httpCode || e.statusCode || e.response?.status || +((m.match(/status code (\\d{3})/) || [])[1] || 0);\n      const retryable = !status || status === 429 || status >= 500 || /LLM_BAD_OUTPUT|Unexpected token|JSON/.test(m);\n      if (!retryable || attempt === llm.maxTries) {\n        throw new Error(`LLM_ERROR: ${llm.provider} call failed after ${attempt} attempt(s)` + (status ? ` (HTTP ${status})` : '') + `: ${m.slice(0, 300)}`);\n      }\n      await sleep(2000 * Math.pow(3, attempt - 1)); // 2s, 6s\n    }\n  }\n  throw lastErr;\n}\n\n// ---- prompts ----\nconst WRITER_SYSTEM = `ROLE: WRITER\nYou write short, trustworthy Facebook posts that share one PlacidWay page (a medical tourism marketplace).\nUse ONLY facts stated in the SOURCE. If something is not in the SOURCE, leave it out.\n\nStructure:\n- hook: one line, max 110 characters, curiosity or a question, no clickbait.\n- lines: 2 to 4 short lines (max 120 characters each). Each line states one useful fact or takeaway from the SOURCE.\n- cta: one calm line inviting people to read the full page (e.g. \"Read the full guide:\"). No pressure, no urgency, no \"book now\".\n- hashtags: 3 to 5 relevant hashtags, CamelCase, no spaces.\n- hook + lines + cta together must stay under 430 characters. Do NOT include any URL (it is added automatically).\n\nHard rules (a post that breaks one is rejected):\n1. No medical claims and no outcome promises: never say a treatment cures, heals, reverses, fixes, eliminates, restores, guarantees, is proven, is safe/safest/best, is painless or risk-free, and never state success rates or results people will get. Use neutral wording such as \"explores\", \"compares\", \"explains\", \"what to ask\".\n2. Prices: if ALLOW_PRICES is false, mention no prices, costs, savings or currency amounts at all. If true, only copy exact figures from the SOURCE.\n3. No invented facts: every number, name, place and claim must appear in the SOURCE.\n4. At most 2 emojis in the whole post.\n\nReturn ONLY a JSON object:\n{\"hook\": \"...\", \"lines\": [\"...\", \"...\"], \"cta\": \"...\", \"hashtags\": [\"#...\"],\n \"evidence\": [{\"line\": 0, \"quote\": \"verbatim sentence or phrase from SOURCE that supports lines[0]\"}]}\nProvide one evidence item per line; each quote must be copied exactly from the SOURCE.`;\n\nconst REVIEWER_SYSTEM = `ROLE: REVIEWER\nYou are a strict compliance reviewer for healthcare social media posts. Compare the POST with the SOURCE.\nFlag an issue for anything in the POST that is:\n- medical_claim: says or implies a treatment cures, heals, reverses, fixes, works, is safe/proven/best;\n- outcome_promise: promises or implies results, recovery or success for the reader;\n- invented_price: any price, cost, saving or currency amount that is not stated exactly in the SOURCE (or any price at all when ALLOW_PRICES is false);\n- unsupported_fact: any fact, number, name or place not supported by the SOURCE;\n- misleading: exaggeration, fear or urgency tactics, or a framing the SOURCE does not support.\nDo not flag the generic call to action, the hashtags, or neutral paraphrases of the SOURCE.\nReturn ONLY a JSON object: {\"pass\": true|false, \"issues\": [{\"type\": \"...\", \"excerpt\": \"...\", \"reason\": \"...\"}]}.\npass must be false if there is at least one issue.`;\n\nfunction sourceBlock(item, page, cfg) {\n  return `<<<SOURCE\nCONTENT TYPE: ${item.contentType}\nTITLE: ${page.title}\nURL: ${item.url}\nDESCRIPTION: ${page.description || ''}\nBODY:\n${page.body.slice(0, cfg.sourceMaxChars)}\nSOURCE>>>`;\n}\n\n// Guardrail 2 - an independent LLM pass (temperature 0) that reads the source and the post like a compliance reviewer.\nconst state = $input.first().json;\nconst llm = { ...state.cfg.llm, apiKey: $env.LLM_API_KEY, temperature: 0, model: state.cfg.llm.reviewModel || state.cfg.llm.model };\nconst user = `ALLOW_PRICES: ${state.cfg.allowPrices}\n${sourceBlock(state.item, state.page, state.cfg)}\n\n<<<POST\n${state.post.message}\nPOST>>>`;\nconst out = await callLLM(this, llm, REVIEWER_SYSTEM, user);\nconst issues = (Array.isArray(out.data.issues) ? out.data.issues : []).map((i) => ({ type: String(i.type || 'issue'), excerpt: String(i.excerpt || ''), reason: String(i.reason || ''), by: 'llm' }));\nconst review = { pass: out.data.pass === true && issues.length === 0, issues };\nreturn [{ json: { ...state, review } }];\n"
+      },
+      "onError": "continueErrorOutput",
+      "notes": "Independent reviewer, temperature 0",
+      "notesInFlow": true
+    },
+    {
+      "id": "0c491100-3e5d-53b2-930d-aeb892495de4",
+      "name": "Guardrail Verdict",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4080,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Guardrail Verdict: publish only if BOTH the rules and the LLM reviewer pass.\nconst state = $input.first().json;\nconst issues = [...state.rules.issues, ...state.review.issues];\nconst pass = state.rules.pass && state.review.pass;\nconst guardrailHistory = [...(state.guardrailHistory || []), { attempt: state.attempt, rulesPass: state.rules.pass, llmPass: state.review.pass, issues, draft: state.post.message }];\nreturn [{ json: { ...state, guardrail: { pass, issues, attempt: state.attempt }, guardrailHistory, canRewrite: !pass && state.attempt <= state.cfg.maxRewrites } }];\n"
+      }
+    },
+    {
+      "id": "1f45d242-8b29-5898-a11e-ac0cf3bdf2dd",
+      "name": "Passed Guardrails?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4320,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b79a7640-39a6-521f-9b5a-37d3137fd777",
+              "leftValue": "={{ $json.guardrail.pass }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "f40b97de-c216-5931-8197-a3f3c4619ca7",
+      "name": "Rewrite Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4320,
+        600
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "30c46a14-2f83-5bea-9983-20d702e850dd",
+              "leftValue": "={{ $json.canRewrite }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "f904ebcf-809f-5e8d-a0a2-65f4dff4e6fc",
+      "name": "Prepare Rewrite",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// Prepare Rewrite: feed the exact issues back to the writer for one more attempt.\nconst state = $input.first().json;\nreturn [{ json: { ...state, rewrite: { issues: state.guardrail.issues, previous: state.draft } } }];\n"
+      },
+      "notes": "Feed issues back, 1 retry",
+      "notesInFlow": true
+    },
+    {
+      "id": "b7d26e51-1df6-5aff-b530-e6b35372100b",
+      "name": "Guardrail Blocked",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// Guardrail Blocked: no attempt passed, so nothing is published. Hand over to the failure path.\nconst s = $input.first().json;\nconst summary = s.guardrail.issues.map((i) => `[${i.by}:${i.type}] ${i.excerpt || ''} ${i.reason}`).join(' | ').slice(0, 900);\nreturn [{ json: { error: { message: `GUARDRAIL_BLOCKED: post for ${s.item.url} failed checks after ${s.attempt} attempt(s): ${summary}` }, blockedDraft: s.post.message } }];\n"
+      }
+    },
+    {
+      "id": "0a65a6a4-c713-5cfd-8857-55b558a8e3bb",
+      "name": "Final Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Final Post: freeze the approved text and build the exact Graph API request bodies.\nconst s = $input.first().json;\nconst delay = s.cfg.fb.scheduleDelayMinutes;\nconst scheduleAt = delay > 0 ? Math.floor(Date.now() / 1000) + Math.max(11, delay) * 60 : null; // Graph needs >= 10 min ahead (max 30 days)\n// Publish now with an image -> POST /{page}/photos (image + caption; the link is inside the caption).\n// Scheduled, or no image   -> POST /{page}/feed with link (Facebook renders the page's og:image as a link card).\n// Meta documents scheduling on /feed (published=false + scheduled_publish_time + unpublished_content_type=SCHEDULED);\n// scheduling a single /photos upload directly is not the documented path, so we do not rely on it.\nconst usePhoto = !!s.page.image && !scheduleAt;\nconst sched = scheduleAt ? { published: false, scheduled_publish_time: scheduleAt, unpublished_content_type: 'SCHEDULED' } : { published: true };\nconst endpoint = usePhoto ? 'photos' : 'feed';\nconst fb = {\n  endpoint,\n  url: `${s.cfg.fb.graphBase}/${s.cfg.fb.version}/${s.cfg.fb.pageId || '{FB_PAGE_ID}'}/${endpoint}`,\n  body: usePhoto ? { url: s.page.image, caption: s.post.message, published: true } : { message: s.post.message, link: s.item.url, ...sched },\n  scheduleAt,\n};\nconst { rewrite, ...clean } = s;\nreturn [{ json: { ...clean, fb } }];\n"
+      },
+      "notes": "Freeze text, build Graph request",
+      "notesInFlow": true
+    },
+    {
+      "id": "eb95f817-096c-5dd0-ba7e-fc3f97064078",
+      "name": "Approval Mode?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4800,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e746a44b-4f53-558c-a16f-a43de861d7a6",
+              "leftValue": "={{ $json.cfg.approvalMode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "152dbe9b-cd57-55c4-bf5b-65519f61c74d",
+      "name": "Build Review Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5040,
+        -200
+      ],
+      "parameters": {
+        "jsCode": "// Build Review Request: draft + one-click approve/reject links (they resume the waiting execution).\nconst s = $input.first().json;\nconst resume = $execution.resumeUrl;\nconst sep = resume.includes('?') ? '&' : '?'; // n8n 2.x resume URLs already carry ?signature=...\nconst approveUrl = `${resume}${sep}decision=approve`;\nconst rejectUrl = `${resume}${sep}decision=reject`;\nconst text = [\n  `*PlacidWay -> Facebook: draft needs approval* (run ${s.run.id}, ${s.cfg.dryRun ? 'DRY RUN' : 'LIVE'})`,\n  `Source (${s.item.contentType}, ${s.item.category}): ${s.item.url}`,\n  s.page.image ? `Image: ${s.page.image}` : 'Image: none (link post)',\n  '', '```', s.post.message, '```', '',\n  `Guardrails: passed on attempt ${s.guardrail.attempt} (rules + LLM review)`,\n  `Approve: ${approveUrl}`, `Reject: ${rejectUrl}`, `Expires in ${$env.APPROVAL_TIMEOUT_HOURS || 24}h.`,\n].join('\\n');\nconst payload = s.cfg.review.format === 'slack' ? { text }\n  : { event: 'approval_request', run_id: s.run.id, source_url: s.item.url, image_url: s.page.image, post: s.post.message, approve_url: approveUrl, reject_url: rejectUrl };\nreturn [{ json: { ...s, approval: { approveUrl, rejectUrl, resumeUrl: resume, payload } } }];\n"
+      }
+    },
+    {
+      "id": "d74e905c-327c-5a52-a722-8ea9598cb2ed",
+      "name": "Reviewer Webhook Set?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5280,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e4de9458-6c2d-5154-91ef-f86dbfaec80f",
+              "leftValue": "={{ $json.cfg.review.webhookUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "ba7f7a85-b598-58f2-9d43-fc025f312028",
+      "name": "Notify Reviewer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5520,
+        -300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Build Review Request').first().json.cfg.review.webhookUrl }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Build Review Request').first().json.approval.payload) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Slack-compatible incoming webhook",
+      "notesInFlow": true
+    },
+    {
+      "id": "b35d94ab-c423-5027-a5b4-62355b1ed006",
+      "name": "Set Pending",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5760,
+        -200
+      ],
+      "parameters": {
+        "jsCode": "const s = $('Build Review Request').first().json;\nreturn [{ json: { ...s, result: { status: 'pending_approval', reviewUrl: s.approval.resumeUrl } } }];\n"
+      }
+    },
+    {
+      "id": "66d49aa6-c9ac-548f-ba5e-b78def10c376",
+      "name": "Row: Pending",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6000,
+        -200
+      ],
+      "parameters": {
+        "jsCode": "// Shape one pw_runs row (columns must match the Data Table exactly). Used for pending / final / rejected states.\nconst s = $input.first().json;\nconst result = s.result || {};\nreturn [{ json: {\n  run_id: s.run.id, started_at: s.run.startedAt, finished_at: result.status === 'pending_approval' ? '' : new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',\n  trigger: s.run.trigger, mode: s.run.mode, content_type: s.item.contentType, category: s.item.category,\n  item_url: s.item.url, item_title: s.page.title, image_url: s.page.image || '', post_text: s.post.message,\n  chars_before_link: s.post.charsBeforeLink, attempts: s.attempt,\n  guardrail: (s.guardrailHistory || []).map((g) => `#${g.attempt}:${g.rulesPass && g.llmPass ? 'pass' : 'fail(' + g.issues.length + ')'}`).join(' '),\n  fb_post_id: result.fbPostId || '', status: result.status || 'unknown', error: result.error || '', review_url: result.reviewUrl || '',\n} }];\n"
+      }
+    },
+    {
+      "id": "a65b43a8-32a5-593f-8a0d-d4b1e5cb376e",
+      "name": "Log: Pending Approval",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        6240,
+        -200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_runs"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "28556372-1c9a-54bf-917f-3ff4cc4b1e0c",
+      "name": "Wait for Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6480,
+        -200
+      ],
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "GET",
+        "limitWaitTime": true,
+        "limitType": "afterTimeInterval",
+        "resumeAmount": "={{ Number($env.APPROVAL_TIMEOUT_HOURS || 24) }}",
+        "resumeUnit": "hours",
+        "options": {}
+      },
+      "webhookId": "3d7e5b1a-placidway-approval-0001",
+      "notes": "Approve/reject link resumes here",
+      "notesInFlow": true
+    },
+    {
+      "id": "c88a55b8-9853-5940-b17f-42a0818eb74e",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6720,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "20fb5ce6-e4f7-58f1-a5d0-b1d7916c292b",
+              "leftValue": "={{ $json.query?.decision }}",
+              "rightValue": "approve",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "80492c66-3f2b-5fe3-ab19-6049a5b87557",
+      "name": "Set Rejected / Expired",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6960,
+        -400
+      ],
+      "parameters": {
+        "jsCode": "// Reviewer rejected, or the approval window expired (the Wait node times out with no decision).\nconst s = $('Final Post').first().json;\nconst decision = $input.first().json.query?.decision;\nconst status = decision === 'reject' ? 'rejected' : 'expired';\nreturn [{ json: { ...s, result: { status, error: status === 'expired' ? 'No reviewer decision before timeout' : '' } } }];\n"
+      }
+    },
+    {
+      "id": "7de7ece6-5aac-50b4-892a-e572ad3d6992",
+      "name": "Row: Rejected",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7200,
+        -400
+      ],
+      "parameters": {
+        "jsCode": "// Shape one pw_runs row (columns must match the Data Table exactly). Used for pending / final / rejected states.\nconst s = $input.first().json;\nconst result = s.result || {};\nreturn [{ json: {\n  run_id: s.run.id, started_at: s.run.startedAt, finished_at: result.status === 'pending_approval' ? '' : new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',\n  trigger: s.run.trigger, mode: s.run.mode, content_type: s.item.contentType, category: s.item.category,\n  item_url: s.item.url, item_title: s.page.title, image_url: s.page.image || '', post_text: s.post.message,\n  chars_before_link: s.post.charsBeforeLink, attempts: s.attempt,\n  guardrail: (s.guardrailHistory || []).map((g) => `#${g.attempt}:${g.rulesPass && g.llmPass ? 'pass' : 'fail(' + g.issues.length + ')'}`).join(' '),\n  fb_post_id: result.fbPostId || '', status: result.status || 'unknown', error: result.error || '', review_url: result.reviewUrl || '',\n} }];\n"
+      }
+    },
+    {
+      "id": "585f75cb-85ff-51e5-9340-b57a2391420c",
+      "name": "Log Rejected Run",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        7440,
+        -400
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_runs"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2afac0c3-050c-51dc-ac6d-7878b103edbb",
+      "name": "Row: Seen (rejected)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7680,
+        -400
+      ],
+      "parameters": {
+        "jsCode": "// A rejected draft's URL is also remembered, so the same item is not proposed to the reviewer again tomorrow.\nconst s = $('Row: Rejected').last().json;\nreturn [{ json: { url: s.item_url, title: s.item_title, content_type: s.content_type, category: s.category, fb_post_id: '', status: s.status, posted_at: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC' } }];\n"
+      }
+    },
+    {
+      "id": "376b0540-4a1d-5c74-a482-c3c3ce7f1158",
+      "name": "Remember Rejected URL",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        7920,
+        -400
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_posted"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "327d8215-f3a8-5aae-90d6-1b6e128ba47f",
+      "name": "Dry Run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6960,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5203f40b-9e10-5881-8434-1a512d7f956e",
+              "leftValue": "={{ $('Final Post').first().json.cfg.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "1e232978-6575-5681-98a8-c798cd97ed0e",
+      "name": "Simulate Publish",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7200,
+        60
+      ],
+      "parameters": {
+        "jsCode": "// DRY RUN: build exactly what would be sent to the Graph API, but send nothing.\nconst s = $('Final Post').first().json;\nconst fbPostId = `dryrun_${s.run.id}_${Date.now()}`;\nreturn [{ json: { ...s, result: { status: 'dry_run', fbPostId,\n  simulatedRequest: { method: 'POST', url: s.fb.url, headers: { Authorization: 'Bearer <FB_PAGE_TOKEN>' }, body: s.fb.body } } } }];\n"
+      },
+      "notes": "DRY RUN: nothing is sent",
+      "notesInFlow": true
+    },
+    {
+      "id": "aff5bc5f-2102-5c50-8521-f857af88e2f6",
+      "name": "Photo Post?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7200,
+        340
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e19ed2e8-de33-59f2-b204-ffb703b8de38",
+              "leftValue": "={{ $('Final Post').first().json.fb.endpoint === 'photos' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "5ded65b0-69c6-5a1f-b984-5a9ddb8e064d",
+      "name": "Facebook: Publish Photo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7440,
+        260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Final Post').first().json.fb.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Final Post').first().json.fb.body) }}",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.FB_PAGE_TOKEN }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "POST /{page-id}/photos (no auto-retry: a timeout may still have published)",
+      "notesInFlow": true
+    },
+    {
+      "id": "3d0566a5-1305-50b1-84a1-ca9ed62ecbf3",
+      "name": "Facebook: Publish Link Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7440,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Final Post').first().json.fb.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Final Post').first().json.fb.body) }}",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.FB_PAGE_TOKEN }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "POST /{page-id}/feed (no auto-retry: a timeout may still have published)",
+      "notesInFlow": true
+    },
+    {
+      "id": "cbd01b88-e133-543b-a43b-28e45c2ffcd9",
+      "name": "Publish Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7680,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// Normalise the Graph API response: /photos returns {id, post_id}, /feed returns {id}.\nconst s = $('Final Post').first().json;\nconst r = $input.first().json;\nconst fbPostId = r.post_id || r.id;\nif (!fbPostId) throw new Error('FB_ERROR: Graph API returned no post id: ' + JSON.stringify(r).slice(0, 300));\nreturn [{ json: { ...s, result: { status: s.fb.scheduleAt ? 'scheduled' : 'published', fbPostId, scheduledFor: s.fb.scheduleAt ? new Date(s.fb.scheduleAt * 1000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' : '' } } }];\n"
+      }
+    },
+    {
+      "id": "c511d0c3-e800-538f-af77-f9678d381f33",
+      "name": "Row: Run Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7920,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Shape one pw_runs row (columns must match the Data Table exactly). Used for pending / final / rejected states.\nconst s = $input.first().json;\nconst result = s.result || {};\nreturn [{ json: {\n  run_id: s.run.id, started_at: s.run.startedAt, finished_at: result.status === 'pending_approval' ? '' : new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',\n  trigger: s.run.trigger, mode: s.run.mode, content_type: s.item.contentType, category: s.item.category,\n  item_url: s.item.url, item_title: s.page.title, image_url: s.page.image || '', post_text: s.post.message,\n  chars_before_link: s.post.charsBeforeLink, attempts: s.attempt,\n  guardrail: (s.guardrailHistory || []).map((g) => `#${g.attempt}:${g.rulesPass && g.llmPass ? 'pass' : 'fail(' + g.issues.length + ')'}`).join(' '),\n  fb_post_id: result.fbPostId || '', status: result.status || 'unknown', error: result.error || '', review_url: result.reviewUrl || '',\n} }];\n"
+      }
+    },
+    {
+      "id": "30a2ce1a-5b80-58cc-b7dd-db78eb223f3e",
+      "name": "Log Run",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8160,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_runs"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "f384370d-76d2-569a-adc6-dd8242beefdb",
+      "name": "Row: Posted",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8400,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// pw_posted row: the de-duplication store (one row per URL ever posted, scheduled or dry-run posted).\nconst s = $('Row: Run Log').last().json;\nreturn [{ json: { url: s.item_url, title: s.item_title, content_type: s.content_type, category: s.category, fb_post_id: s.fb_post_id, status: s.status, posted_at: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC' } }];\n"
+      }
+    },
+    {
+      "id": "7c6c790a-c4a0-50a7-9eef-fd1d384edec4",
+      "name": "Mark URL as Posted",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8640,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_posted"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "65d7004c-0b0b-5c6a-bb94-f3868d57bbba",
+      "name": "Classify Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        1000
+      ],
+      "parameters": {
+        "jsCode": "// Classify Failure: every error branch lands here. Turn raw errors into an actionable alert + a failed run row.\nconst input = $input.first().json;\nconst raw = input.error?.message || input.error?.description || (typeof input.error === 'string' ? input.error : '') || input.message || JSON.stringify(input).slice(0, 500);\nconst desc = String(input.error?.description || '');\nlet msg = String(raw) + (desc && !String(raw).includes(desc) ? ' | ' + desc : '');\nconst cfChallenge = /Just a moment|cf-mitigated|challenge-platform/i.test(msg);\nmsg = msg.replace(/<[^>]*>/g, ' ').replace(/\\\\\"/g, '\"').replace(/\\s+/g, ' ').trim().slice(0, 600); // strip HTML error pages\nif (cfChallenge) msg = 'SOURCE_BLOCKED: Cloudflare \"Just a moment\" challenge (HTTP 403). ' + msg.slice(0, 120);\n// Explicit codes thrown by our own nodes are matched first, so words inside their messages\n// (e.g. a guardrail issue saying \"Forbidden claim wording\") can't be mistaken for an HTTP 403 or a token error.\nconst rules = [\n  ['ROBOTS_DISALLOWED', /ROBOTS_DISALLOWED/, 'robots.txt now disallows the content we read. Workflow refused to fetch it.'],\n  ['NO_NEW_CONTENT', /NO_NEW_CONTENT/, 'Every recent item of today\\'s content type was already posted. Consider widening CANDIDATE_WINDOW.'],\n  ['PARSE_FAILED', /PARSE_FAILED/, 'The page layout may have changed; check the Parse Page node.'],\n  ['GUARDRAIL_BLOCKED', /GUARDRAIL_BLOCKED/, 'Draft failed the safety checks twice, so nothing was published. Review the issues below.'],\n  ['CONFIG_ERROR', /CONFIG_ERROR/, 'Fix the environment variables listed in the message.'],\n  ['FB_TOKEN_EXPIRED', /\\b190\\b|OAuthException|access token|Session has expired/i, 'Facebook page token is invalid or expired. Generate a new long-lived Page token (README section 5) and update FB_PAGE_TOKEN.'],\n  ['FB_PERMISSION', /\\(#(10|200|210)\\)|pages_manage_posts|permission/i, 'The token lacks pages_manage_posts / pages_read_engagement for this Page.'],\n  ['SOURCE_BLOCKED', /SOURCE_BLOCKED|cf-mitigated|Just a moment|\\b403\\b|Forbidden/i, 'placidway.com refused the request (bot wall). Nothing was posted. Retry later or from another network.'],\n  ['SOURCE_DOWN', /SOURCE_DOWN|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|ECONNRESET|socket hang up|timeout|\\b50[0-4]\\b|Service Unavailable|Bad gateway/i, 'placidway.com is unreachable or erroring. Retries were exhausted; tomorrow\\'s run will try again.'],\n  ['LLM_ERROR', /LLM_|openai|anthropic/i, 'The LLM call failed (key, quota or provider outage).'],\n];\n// Publish failures get their own rules: a Facebook error must never read as a PlacidWay outage,\n// and a timeout after the POST left may mean the post is already live.\nlet publishNode = '';\nfor (const n of ['Facebook: Publish Photo', 'Facebook: Publish Link Post']) {\n  try { if ($(n).isExecuted) publishNode = n; } catch (e) {}\n}\nconst fbRules = [\n  ['FB_TOKEN_EXPIRED', /\"code\"\\s*:\\s*190\\b|\\(#190\\)|\\bcode 190\\b|Session has expired|Error validating access token/i, 'Facebook page token is invalid or expired. Generate a new long-lived Page token (README section 5) and update FB_PAGE_TOKEN. Nothing was posted.'],\n  ['FB_PERMISSION', /\"code\"\\s*:\\s*(10|200|210)\\b|\\(#(10|200|210)\\)|pages_manage_posts|permission/i, 'The token lacks pages_manage_posts / pages_read_engagement for this Page. Nothing was posted.'],\n  ['FB_PUBLISH_UNCERTAIN', /ETIMEDOUT|ECONNRESET|ECONNABORTED|socket hang up|timeout|timed out/i, 'The request to Facebook timed out, so the post MAY already be live. Check the Page before re-running; if it is live, do not re-run (the URL is not marked as posted).'],\n  ['FB_TEMPORARY', /.*/, 'Facebook returned a temporary or unknown error and did not confirm the post. Check the Page once, then re-run manually or let tomorrow\\'s run retry.'],\n];\nconst [code, , hint] = (publishNode ? fbRules : rules).find(([, re]) => re.test(msg)) || ['UNEXPECTED', null, 'Unexpected error - open the execution in n8n.'];\n// Recover as much run context as exists (the furthest successful step wins).\nlet ctx = {};\nfor (const n of ['Final Post', 'Parse Page', 'Select Item', 'Apply robots.txt', 'Plan Run (Rotation)', 'Config']) {\n  try { const j = $(n).first(0)?.json; if (j && j.run) { ctx = j; break; } } catch (e) {} // output 0 = success branch (default would follow our error branch)\n}\nlet failedNode = '';\nfor (const n of ['Fetch robots.txt', 'Fetch Sitemap', 'Fetch Page', 'Parse Page', 'LLM: Write Post', 'Guardrail 2: LLM Review', 'Facebook: Publish Photo', 'Facebook: Publish Link Post', 'Select Item', 'Apply robots.txt', 'Config']) {\n  try { if ($(n).isExecuted) failedNode = n; } catch (e) {}\n}\nconst run = ctx.run || { id: String($execution.id), trigger: 'unknown', startedAt: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC', mode: '' };\nconst status = code === 'GUARDRAIL_BLOCKED' ? 'guardrail_blocked' : code === 'NO_NEW_CONTENT' ? 'skipped' : code === 'FB_PUBLISH_UNCERTAIN' ? 'publish_uncertain' : 'failed';\nconst row = {\n  run_id: run.id, started_at: run.startedAt, finished_at: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC', trigger: run.trigger, mode: run.mode,\n  content_type: ctx.item?.contentType || ctx.plan?.contentType || '', category: ctx.item?.category || '', item_url: ctx.item?.url || '',\n  item_title: '', image_url: '', post_text: input.blockedDraft || '', chars_before_link: 0, attempts: 0, guardrail: '',\n  fb_post_id: '', status, error: `${code}: ${msg}`.slice(0, 1500), review_url: '',\n};\nconst text = `:rotating_light: *PlacidWay -> Facebook run ${status.toUpperCase()}* - ${code}\\nRun: ${run.id} (${run.trigger}, ${run.mode})\\nItem: ${row.item_url || 'n/a'}\\nWhat happened: ${msg.slice(0, 700)}\\nWhat to do: ${hint}`;\nconst fmt = $env.WEBHOOK_FORMAT || 'slack';\nconst alert = { url: $env.ALERT_WEBHOOK_URL || '', payload: fmt === 'slack' ? { text } : { event: 'run_failed', code, status, run_id: run.id, item_url: row.item_url, message: msg, hint } };\nreturn [{ json: { row, alert, code, hint, message: msg, failedNodeHint: publishNode || failedNode } }];\n"
+      },
+      "notes": "Error -> code + fix hint",
+      "notesInFlow": true
+    },
+    {
+      "id": "9ea3a958-cba3-5e17-bf24-adcdce3f7ad2",
+      "name": "Row: Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        1000
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: $input.first().json.row }];\n"
+      }
+    },
+    {
+      "id": "bb6468b6-a366-5307-b971-5e0af1d9fcb6",
+      "name": "Log Failed Run",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3840,
+        1000
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pw_runs"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "run_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.run_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "9e897185-dbdf-59a6-a3d4-717121de4552",
+      "name": "Alert Webhook Set?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4080,
+        1000
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4161eed-4acb-544c-9edd-6e20edc61290",
+              "leftValue": "={{ $('Classify Failure').first().json.alert.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "a1e10d57-40f2-52cc-953b-89ddd70a35d7",
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4320,
+        920
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Classify Failure').first().json.alert.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Classify Failure').first().json.alert.payload) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "882ba542-afe5-529c-874f-730b679cffc5",
+      "name": "Stop: Mark Run Failed",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4560,
+        1000
+      ],
+      "parameters": {
+        "errorMessage": "=ALERTED {{ $('Classify Failure').first().json.code }} (run {{ $execution.id }}; details already sent to the alert channel and pw_runs)"
+      }
+    },
+    {
+      "id": "3207b8c1-954d-5f5c-a3d2-2572b2b3496e",
+      "name": "Note: Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -480
+      ],
+      "parameters": {
+        "content": "## PlacidWay -> Facebook daily post\nTrigger -> robots.txt -> sitemap -> pick 1 new item -> parse page -> LLM draft -> 2 guardrails (rules + LLM review, 1 rewrite) -> approval (optional) -> publish / dry-run -> log.\nAll config via env (see README). DRY_RUN=true by default.",
+        "width": 700,
+        "height": 200,
+        "color": 4
+      }
+    },
+    {
+      "id": "842a0f93-e674-51e1-92e2-d91e5ea96a28",
+      "name": "Note: Extract",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -240
+      ],
+      "parameters": {
+        "content": "### Extract (polite)\nrobots.txt is fetched and honoured every run, Crawl-delay respected, >= 1.1 s between requests, 3 requests per run in total. Sitemap gives lastmod + image without crawling listing pages.",
+        "width": 760,
+        "height": 170,
+        "color": 5
+      }
+    },
+    {
+      "id": "1d92a7a8-0e90-5da9-827d-197a145a5b3d",
+      "name": "Note: Guardrails",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3320,
+        -240
+      ],
+      "parameters": {
+        "content": "### Generate + guardrails\nRules: length, structure, banned claim words, no prices (unless ALLOW_PRICES), every number must exist in source, every line needs a verbatim source quote.\nLLM review: independent pass at temperature 0. Fail -> one rewrite with the issues -> still failing = blocked + alert.",
+        "width": 1000,
+        "height": 190,
+        "color": 3
+      }
+    },
+    {
+      "id": "93a52b9c-8b6f-5eab-80e4-cbbeeb9898c1",
+      "name": "Note: Failure path",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3320,
+        1220
+      ],
+      "parameters": {
+        "content": "### Failure path\nEvery risky node has an error output. Classify Failure maps it to a code (SOURCE_BLOCKED, SOURCE_DOWN, FB_TOKEN_EXPIRED, LLM_ERROR, GUARDRAIL_BLOCKED...), logs a failed run, alerts the webhook, then marks the execution failed. Source and LLM HTTP calls retry 3x (5 s apart). Facebook publish calls never auto-retry: a timeout is flagged FB_PUBLISH_UNCERTAIN (check the Page first).",
+        "width": 1200,
+        "height": 150,
+        "color": 2
+      }
+    }
+  ],
+  "connections": {
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Ensure Table: pw_runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Run": {
+      "main": [
+        [
+          {
+            "node": "Ensure Table: pw_runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Now (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "Ensure Table: pw_runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Table: pw_runs": {
+      "main": [
+        [
+          {
+            "node": "Ensure Table: pw_posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Table: pw_posted": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Load Posted History",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Posted History": {
+      "main": [
+        [
+          {
+            "node": "Plan Run (Rotation)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Run (Rotation)": {
+      "main": [
+        [
+          {
+            "node": "Throttle 1 req/s (start)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle 1 req/s (start)": {
+      "main": [
+        [
+          {
+            "node": "Fetch robots.txt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch robots.txt": {
+      "main": [
+        [
+          {
+            "node": "Apply robots.txt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply robots.txt": {
+      "main": [
+        [
+          {
+            "node": "Throttle 1 req/s (a)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle 1 req/s (a)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Sitemap": {
+      "main": [
+        [
+          {
+            "node": "Select Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Item": {
+      "main": [
+        [
+          {
+            "node": "Throttle 1 req/s (b)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle 1 req/s (b)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Page": {
+      "main": [
+        [
+          {
+            "node": "Parse Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Page": {
+      "main": [
+        [
+          {
+            "node": "LLM: Write Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Write Post": {
+      "main": [
+        [
+          {
+            "node": "Guardrail 1: Rules",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail 1: Rules": {
+      "main": [
+        [
+          {
+            "node": "Guardrail 2: LLM Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail 2: LLM Review": {
+      "main": [
+        [
+          {
+            "node": "Guardrail Verdict",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail Verdict": {
+      "main": [
+        [
+          {
+            "node": "Passed Guardrails?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Passed Guardrails?": {
+      "main": [
+        [
+          {
+            "node": "Final Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rewrite Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Rewrite",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardrail Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Rewrite": {
+      "main": [
+        [
+          {
+            "node": "LLM: Write Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Post": {
+      "main": [
+        [
+          {
+            "node": "Approval Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval Mode?": {
+      "main": [
+        [
+          {
+            "node": "Build Review Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dry Run?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Review Request": {
+      "main": [
+        [
+          {
+            "node": "Reviewer Webhook Set?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reviewer Webhook Set?": {
+      "main": [
+        [
+          {
+            "node": "Notify Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Set Pending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Pending": {
+      "main": [
+        [
+          {
+            "node": "Row: Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Pending": {
+      "main": [
+        [
+          {
+            "node": "Log: Pending Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Pending Approval": {
+      "main": [
+        [
+          {
+            "node": "Wait for Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Approval": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Dry Run?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Rejected / Expired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Rejected / Expired": {
+      "main": [
+        [
+          {
+            "node": "Row: Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Rejected": {
+      "main": [
+        [
+          {
+            "node": "Log Rejected Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Rejected Run": {
+      "main": [
+        [
+          {
+            "node": "Row: Seen (rejected)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Seen (rejected)": {
+      "main": [
+        [
+          {
+            "node": "Remember Rejected URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Run?": {
+      "main": [
+        [
+          {
+            "node": "Simulate Publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Photo Post?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Photo Post?": {
+      "main": [
+        [
+          {
+            "node": "Facebook: Publish Photo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook: Publish Link Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook: Publish Photo": {
+      "main": [
+        [
+          {
+            "node": "Publish Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook: Publish Link Post": {
+      "main": [
+        [
+          {
+            "node": "Publish Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulate Publish": {
+      "main": [
+        [
+          {
+            "node": "Row: Run Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Result": {
+      "main": [
+        [
+          {
+            "node": "Row: Run Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Run Log": {
+      "main": [
+        [
+          {
+            "node": "Log Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Run": {
+      "main": [
+        [
+          {
+            "node": "Row: Posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Posted": {
+      "main": [
+        [
+          {
+            "node": "Mark URL as Posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Failure": {
+      "main": [
+        [
+          {
+            "node": "Row: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row: Failed": {
+      "main": [
+        [
+          {
+            "node": "Log Failed Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Failed Run": {
+      "main": [
+        [
+          {
+            "node": "Alert Webhook Set?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Webhook Set?": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Mark Run Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert": {
+      "main": [
+        [
+          {
+            "node": "Stop: Mark Run Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail Blocked": {
+      "main": [
+        [
+          {
+            "node": "Classify Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "PwFbErrorHandl01",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {},
+  "tags": []
+}

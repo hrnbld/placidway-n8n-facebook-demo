@@ -1,0 +1,65 @@
+{
+  "execution_id": 2,
+  "execution_status": "success",
+  "query": {
+    "type": "package",
+    "image": "none"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "mock-extractive"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Photo Post?",
+    "Facebook: Publish Link Post",
+    "Publish Result",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8457/CABG-Triple-Vessel-Bypass-Open-Heart",
+  "category": "cardiac",
+  "image": "",
+  "post": "Planning care abroad? Triple Vessel CABG Surgery Package in Riyadh, Saudi Arabia at KFSHRC\n\nHospital / Provider: King Faisal Specialist Hospital & Research Centre (Saudi Arabia).\nVirtual surgical consultation prior to arrival.\nStandard isolated CABG surgery (on-pump or routine approach).\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/package/8457/CABG-Triple-Vessel-Bypass-Open-Heart\n\n#MedicalTourism #TreatmentAbroad #HealthcareTravel",
+  "chars_before_link": 325,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "published",
+    "fbPostId": "957899504078846_2459847121",
+    "scheduledFor": ""
+  },
+  "failure": null,
+  "approval_links": null
+}

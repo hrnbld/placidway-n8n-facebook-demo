@@ -1,0 +1,143 @@
+{
+  "execution_id": 7,
+  "execution_status": "error",
+  "query": {
+    "type": "answer"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "mock-extractive"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed? x2",
+    "Prepare Rewrite",
+    "Guardrail Blocked",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": "answer",
+  "item_url": "https://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan",
+  "category": "stem-cell",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1785483651_MASTER-%281%29.png",
+  "post": "Planning care abroad? How Much Does Stem Cell Therapy Cost in Japan?\n\nAutologous treatments and allogeneic cord cell therapies carry distinct financial and medical profiles.\nSystemic intravenous infusions generally demand a significantly higher budget than localized joint injections.\nGuaranteed results for only $999 - this treatment cures it for good.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan\n\n#MedicalTourism #PatientQuestions #HealthcareTravel",
+  "chars_before_link": 390,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": false,
+      "issues": [
+        {
+          "type": "medical_claim",
+          "excerpt": "cures",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Prices are disabled (ALLOW_PRICES=false).",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "999",
+          "reason": "Number not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed results",
+          "reason": "Promises an outcome.",
+          "by": "llm"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Price not in source.",
+          "by": "llm"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": false,
+      "llm": false,
+      "issues": [
+        {
+          "type": "medical_claim",
+          "excerpt": "cures",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Prices are disabled (ALLOW_PRICES=false).",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "999",
+          "reason": "Number not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "outcome_promise",
+          "excerpt": "Guaranteed results",
+          "reason": "Promises an outcome.",
+          "by": "llm"
+        },
+        {
+          "type": "invented_price",
+          "excerpt": "$999",
+          "reason": "Price not in source.",
+          "by": "llm"
+        }
+      ]
+    }
+  ],
+  "result": null,
+  "failure": {
+    "code": "SOURCE_BLOCKED",
+    "message": "GUARDRAIL_BLOCKED: post for https://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan failed checks after 2 attempt(s): [rules:medical_claim] cures Forbidden claim wording. | [rules:outcome_promise] Guaranteed Forbidden claim wording. | [rules:invented_price] $999 Prices are disabled (ALLOW_PRICES=false). | [rules:unsupported_fact] 999 Number not found in the source page. | [llm:outcome_promise] Guaranteed results Promises an outcome. | [llm:invented_price] $999 Price not in source.",
+    "hint": "placidway.com refused the request (bot wall). Nothing was posted. Retry later or from another network."
+  },
+  "approval_links": null
+}

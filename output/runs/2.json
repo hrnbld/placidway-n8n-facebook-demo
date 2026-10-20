@@ -1,0 +1,73 @@
+{
+  "execution_id": 2,
+  "execution_status": "success",
+  "query": {
+    "type": "package"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8457/CABG-Triple-Vessel-Bypass-Open-Heart",
+  "category": "cardiac",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1792454174_Triple-Vessel-CABG-Surgery-Package-in-Saudi-Arabia-at-KFSHRC.jpg",
+  "post": "Considering heart surgery abroad? Explore a comprehensive CABG package in Riyadh.\n\nThe package covers a Triple Vessel CABG surgery at King Faisal Specialist Hospital & Research Centre.\nHospital stay ranges from 6 to 9 days, with 1‑3 days in the ICU and inpatient physiotherapy.\nIncluded services: multidisciplinary evaluation, virtual consultation, surgery, medications, and one post‑discharge follow‑up.\n\nRead the full guide:\nhttps://www.placidway.com/package/8457/CABG-Triple-Vessel-Bypass-Open-Heart\n\n#HeartHealth #CardiacCare #MedicalTourism #SaudiArabia #CABGSurgery",
+  "chars_before_link": 426,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_2_1792460539080",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/editor_images/1792454174_Triple-Vessel-CABG-Surgery-Package-in-Saudi-Arabia-at-KFSHRC.jpg",
+        "caption": "Considering heart surgery abroad? Explore a comprehensive CABG package in Riyadh.\n\nThe package covers a Triple Vessel CABG surgery at King Faisal Specialist Hospital & Research Centre.\nHospital stay ranges from 6 to 9 days, with 1‑3 days in the ICU and inpatient physiotherapy.\nIncluded services: multidisciplinary evaluation, virtual consultation, surgery, medications, and one post‑discharge follow‑up.\n\nRead the full guide:\nhttps://www.placidway.com/package/8457/CABG-Triple-Vessel-Bypass-Open-Heart\n\n#HeartHealth #CardiacCare #MedicalTourism #SaudiArabia #CABGSurgery",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

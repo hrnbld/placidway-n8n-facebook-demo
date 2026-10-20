@@ -1,0 +1,88 @@
+{
+  "execution_id": 3,
+  "execution_status": "success",
+  "query": {
+    "type": "answer"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed?",
+    "Prepare Rewrite",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "answer",
+  "item_url": "https://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better",
+  "category": "stem-cell",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1791935878_Comparing-PRP-versus-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better.jpg",
+  "post": "Wonder how Japan’s knee therapies differ?\n\nPRP uses growth factors from your blood to signal the body’s own repair processes.\nStem cell therapy uses live cells from fat or bone marrow to actively regenerate tissue and modulate immunity.\nJapan’s Act on the Safety of Regenerative Medicine requires licensed clinics and certified cell‑processing labs.\n\nRead the full guide:\nhttps://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\n\n#RegenerativeMedicine #KneeTherapies #JapanMedicalTourism #PRPandStemCell",
+  "chars_before_link": 371,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "medical_claim",
+          "excerpt": "healing",
+          "reason": "Forbidden claim wording.",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_3_1792460556471",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/editor_images/1791935878_Comparing-PRP-versus-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better.jpg",
+        "caption": "Wonder how Japan’s knee therapies differ?\n\nPRP uses growth factors from your blood to signal the body’s own repair processes.\nStem cell therapy uses live cells from fat or bone marrow to actively regenerate tissue and modulate immunity.\nJapan’s Act on the Safety of Regenerative Medicine requires licensed clinics and certified cell‑processing labs.\n\nRead the full guide:\nhttps://www.placidway.com/answer-detail/571066/Comparing-PRP-vs-Stem-Cell-Knee-Treatments-in-Japan-Which-Works-Better\n\n#RegenerativeMedicine #KneeTherapies #JapanMedicalTourism #PRPandStemCell",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

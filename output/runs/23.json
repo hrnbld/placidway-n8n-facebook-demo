@@ -1,0 +1,92 @@
+{
+  "execution_id": 23,
+  "execution_status": "success",
+  "query": {},
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed?",
+    "Prepare Rewrite",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8700/Neurocognitive-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC",
+  "category": "neuro",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1792482673Neurocognitive-Assessment-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+  "post": "Wonder how cognitive health is evaluated in Riyadh?\n\nThe assessment spans 2‑3 days as an outpatient pathway.\nIt includes specialist neurology, behavioral neurology, or geriatric medicine consultation.\nStructured cognitive screening, mental status exam and formal psychometric testing are provided.\nA baseline brain MRI or structural neuroimaging scan is part of the package.\n\nRead the full guide:\nhttps://www.placidway.com/package/8700/Neurocognitive-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#NeurocognitiveAssessment #KingFaisalHospital #MedicalTourism #SaudiArabia",
+  "chars_before_link": 396,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Specialist neurology, behavioral neurology, or geriatric medicine consultation. ",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        },
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Routine metabolic bloodwork panel to evaluate reversible contributors to cogniti",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_23_1792484614318",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/package/1792482673Neurocognitive-Assessment-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+        "caption": "Wonder how cognitive health is evaluated in Riyadh?\n\nThe assessment spans 2‑3 days as an outpatient pathway.\nIt includes specialist neurology, behavioral neurology, or geriatric medicine consultation.\nStructured cognitive screening, mental status exam and formal psychometric testing are provided.\nA baseline brain MRI or structural neuroimaging scan is part of the package.\n\nRead the full guide:\nhttps://www.placidway.com/package/8700/Neurocognitive-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#NeurocognitiveAssessment #KingFaisalHospital #MedicalTourism #SaudiArabia",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

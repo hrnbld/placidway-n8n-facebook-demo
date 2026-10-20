@@ -1,0 +1,72 @@
+{
+  "execution_id": 9,
+  "execution_status": "success",
+  "query": {},
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Reuse Saved Draft #5?",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8685/Oncology-Targeted-Gene-Panel-Testing-NGS-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC",
+  "category": "cancer",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1792477624Oncology-Targeted-Gene-Panel-Testing-(NGS)-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+  "post": "Want to know how tumor genetics are analyzed in Saudi Arabia?\n\nThe targeted gene panel uses NGS to profile tumor DNA and identify actionable somatic mutations.\nTesting is performed at King Faisal Specialist Hospital & Research Centre in Riyadh as a 1‑day outpatient service.\nThe package includes DNA extraction, sequencing, bioinformatic analysis and a standard molecular pathology report.\n\nRead the full guide:\nhttps://www.placidway.com/package/8685/Oncology-Targeted-Gene-Panel-Testing-NGS-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#OncologyDiagnostics #TargetedGenePanel #PrecisionMedicine #SaudiArabia",
+  "chars_before_link": 411,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_9_1792478654610",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "https://graph.facebook.com/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/package/1792477624Oncology-Targeted-Gene-Panel-Testing-(NGS)-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+        "caption": "Want to know how tumor genetics are analyzed in Saudi Arabia?\n\nThe targeted gene panel uses NGS to profile tumor DNA and identify actionable somatic mutations.\nTesting is performed at King Faisal Specialist Hospital & Research Centre in Riyadh as a 1‑day outpatient service.\nThe package includes DNA extraction, sequencing, bioinformatic analysis and a standard molecular pathology report.\n\nRead the full guide:\nhttps://www.placidway.com/package/8685/Oncology-Targeted-Gene-Panel-Testing-NGS-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#OncologyDiagnostics #TargetedGenePanel #PrecisionMedicine #SaudiArabia",
+        "published": true
+      }
+    }
+  },
+  "failure": null,
+  "approval_links": null
+}

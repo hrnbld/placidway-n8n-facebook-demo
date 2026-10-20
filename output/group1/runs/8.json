@@ -1,0 +1,62 @@
+{
+  "execution_id": 8,
+  "execution_status": "waiting",
+  "query": {
+    "type": "answer",
+    "approval": "true"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Build Review Request",
+    "Reviewer Webhook Set?",
+    "Notify Reviewer",
+    "Set Pending",
+    "Row: Pending",
+    "Log: Pending Approval",
+    "Wait for Approval"
+  ],
+  "content_type": "answer",
+  "item_url": "https://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan",
+  "category": "stem-cell",
+  "image": "https://placidwaycdn.s3.amazonaws.com/editor_images/1785483651_MASTER-%281%29.png",
+  "post": "Planning care abroad? How Much Does Stem Cell Therapy Cost in Japan?\n\nAutologous treatments and allogeneic cord cell therapies carry distinct financial and medical profiles.\nSystemic intravenous infusions generally demand a significantly higher budget than localized joint injections.\nPatients must account for airfare, lodging, and extended observation periods when planning their trip.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan\n\n#MedicalTourism #PatientQuestions #HealthcareTravel",
+  "chars_before_link": 424,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": true,
+      "llm": true,
+      "issues": []
+    }
+  ],
+  "result": null,
+  "failure": null,
+  "approval_links": {
+    "approveUrl": "http://127.0.0.1:5678/webhook-waiting/8?signature=76dbdd2f15cf7499a7f3f178112eeca50b5491dc8066bc68d6fb7922eb455e11?decision=approve",
+    "rejectUrl": "http://127.0.0.1:5678/webhook-waiting/8?signature=76dbdd2f15cf7499a7f3f178112eeca50b5491dc8066bc68d6fb7922eb455e11?decision=reject",
+    "resumeUrl": "http://127.0.0.1:5678/webhook-waiting/8?signature=76dbdd2f15cf7499a7f3f178112eeca50b5491dc8066bc68d6fb7922eb455e11",
+    "payload": {
+      "text": "*PlacidWay -> Facebook: draft needs approval* (run 8, DRY RUN)\nSource (answer, stem-cell): https://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan\nImage: https://placidwaycdn.s3.amazonaws.com/editor_images/1785483651_MASTER-%281%29.png\n\n```\nPlanning care abroad? How Much Does Stem Cell Therapy Cost in Japan?\n\nAutologous treatments and allogeneic cord cell therapies carry distinct financial and medical profiles.\nSystemic intravenous infusions generally demand a significantly higher budget than localized joint injections.\nPatients must account for airfare, lodging, and extended observation periods when planning their trip.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/answer-detail/569700/How-Much-Does-Stem-Cell-Therapy-Cost-in-Japan\n\n#MedicalTourism #PatientQuestions #HealthcareTravel\n```\n\nGuardrails: passed on attempt 1 (rules + LLM review)\nApprove: http://127.0.0.1:5678/webhook-waiting/8?signature=76dbdd2f15cf7499a7f3f178112eeca50b5491dc8066bc68d6fb7922eb455e11?decision=approve\nReject: http://127.0.0.1:5678/webhook-waiting/8?signature=76dbdd2f15cf7499a7f3f178112eeca50b5491dc8066bc68d6fb7922eb455e11?decision=reject\nExpires in 24h."
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "execution_id": 31,
+  "execution_status": "error",
+  "query": {
+    "approval": "true"
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-oss:120b"
+  },
+  "nodes_run": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post x2",
+    "Guardrail 1: Rules x2",
+    "Guardrail 2: LLM Review x2",
+    "Guardrail Verdict x2",
+    "Passed Guardrails? x2",
+    "Rewrite Allowed? x2",
+    "Prepare Rewrite",
+    "Guardrail Blocked",
+    "Classify Failure",
+    "Row: Failed",
+    "Log Failed Run",
+    "Alert Webhook Set?",
+    "Send Alert",
+    "Stop: Mark Run Failed"
+  ],
+  "content_type": "package",
+  "item_url": "https://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC",
+  "category": "cardiac",
+  "image": "https://placidwaycdn.s3.amazonaws.com/images/package/1792482299Cardiac-Risk-Assessment-Package-in-Saudi-Arabia-at-KFSHRC-Thumbnail.jpg",
+  "post": "Curious about a thorough heart health check in Riyadh?\n\nThe Cardiac Risk Assessment Package is offered at King Faisal Specialist Hospital & Research Centre in Riyadh.\nIt includes a one‑day outpatient visit with a cardiology consultation, resting ECG, and comprehensive bloodwork.\nYou receive a written summary report with a personalized preventive health plan.\nA post‑results consultation, either virtual or in‑person, reviews your findings.\n\nRead the full guide:\nhttps://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC\n\n#CardiacRiskAssessment #KFSHRC #SaudiArabia #PreventiveCardiology",
+  "chars_before_link": 463,
+  "guardrail_history": [
+    {
+      "attempt": 1,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Cardiologist or physician consultation with detailed cardiovascular risk review.",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "rules": false,
+      "llm": true,
+      "issues": [
+        {
+          "type": "unsupported_fact",
+          "excerpt": "Cardiologist or physician consultation with detailed cardiovascular risk review.",
+          "reason": "Supporting quote not found in the source page.",
+          "by": "rules"
+        }
+      ]
+    }
+  ],
+  "result": null,
+  "failure": {
+    "code": "GUARDRAIL_BLOCKED",
+    "message": "GUARDRAIL_BLOCKED: post for https://www.placidway.com/package/8699/Cardiac-Risk-Assessment-Package-in-Riyadh-Saudi-Arabia-at-KFSHRC failed checks after 2 attempt(s): [rules:unsupported_fact] Cardiologist or physician consultation with detailed cardiovascular risk review. Supporting quote not found in the source page.",
+    "hint": "Draft failed the safety checks twice, so nothing was published. Review the issues below."
+  },
+  "approval_links": null
+}

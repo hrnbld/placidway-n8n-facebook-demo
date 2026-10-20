@@ -1,0 +1,59 @@
+{
+  "execution_id": 1,
+  "status": "success",
+  "result": {
+    "status": "dry_run",
+    "fbPostId": "dryrun_1_1792459733307",
+    "simulatedRequest": {
+      "method": "POST",
+      "url": "http://127.0.0.1:8790/v24.0/957899504078846/photos",
+      "headers": {
+        "Authorization": "Bearer <FB_PAGE_TOKEN>"
+      },
+      "body": {
+        "url": "https://placidwaycdn.s3.amazonaws.com/images/article_thumb/1792406582Images-(PS)-(5).png",
+        "caption": "Planning care abroad? Lost Weight With Ozempic or Mounjaro: Why Patients Are Considering Body Contouring in Me\n\nThat shift is now influencing plastic surgery demand.\nFor some patients, these medications can produce substantial weight reduction.\nBut losing body fat does not necessarily mean the skin contracts at the same rate.\n\nRead the full details on PlacidWay:\nhttps://www.placidway.com/article/9795/Lost-Weight-With-Ozempic-or-Mounjaro-Why-Patients-Are-Considering-Body-Contouring-in-Mexico\n\n#MedicalTourism #HealthcareTravel #PatientGuide",
+        "published": true
+      }
+    }
+  },
+  "run_row_status": "dry_run",
+  "nodes": [
+    "Run Now (Webhook)",
+    "Ensure Table: pw_runs",
+    "Ensure Table: pw_posted",
+    "Config",
+    "Load Posted History",
+    "Plan Run (Rotation)",
+    "Throttle 1 req/s (start)",
+    "Fetch robots.txt",
+    "Apply robots.txt",
+    "Throttle 1 req/s (a)",
+    "Fetch Sitemap",
+    "Select Item",
+    "Throttle 1 req/s (b)",
+    "Fetch Page",
+    "Parse Page",
+    "LLM: Write Post",
+    "Guardrail 1: Rules",
+    "Guardrail 2: LLM Review",
+    "Guardrail Verdict",
+    "Passed Guardrails?",
+    "Final Post",
+    "Approval Mode?",
+    "Build Review Request",
+    "Reviewer Webhook Set?",
+    "Notify Reviewer",
+    "Set Pending",
+    "Row: Pending",
+    "Log: Pending Approval",
+    "Wait for Approval",
+    "Approved?",
+    "Dry Run?",
+    "Simulate Publish",
+    "Row: Run Log",
+    "Log Run",
+    "Row: Posted",
+    "Mark URL as Posted"
+  ]
+}
